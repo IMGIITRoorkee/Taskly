@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskly/screens/taskform_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,12 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add task functionality
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const TaskFormScreen(),
+            ),
+          );
         },
         child: const Icon(Icons.add),
       ),
