@@ -14,6 +14,7 @@ class TasklyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Taskly',
       theme: ThemeData(
+        fontFamily: 'Quicksand',
         primarySwatch: Colors.blue,
       ),
       home: const HomeScreen(),
