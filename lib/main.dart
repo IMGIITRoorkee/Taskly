@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -10,14 +11,18 @@ class TasklyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Taskly',
       theme: ThemeData(
+        // Set the default font using Google Fonts
+        textTheme: GoogleFonts.ubuntuTextTheme(
+          Theme.of(context).textTheme,
+        ),
         primarySwatch: Colors.blue,
       ),
       home: const HomeScreen(),
     );
   }
 }
+
