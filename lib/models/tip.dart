@@ -27,8 +27,8 @@ class Tip {
 
   factory Tip.fromMap(Map<String, dynamic> map) {
     return Tip(
-      content: map['content'] ?? '',
-      author: map['author'] ?? '',
+      content: map['q'] ?? '',
+      author: map['a'] ?? '',
     );
   }
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:taskly/models/tip.dart';
 
-class MyWidget extends StatelessWidget {
-  const MyWidget({super.key});
+class TipOfDayCard extends StatelessWidget {
+  final Tip? tip;
+  const TipOfDayCard({super.key, required this.tip});
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +22,15 @@ class MyWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            Text(
-              "\"Tragedy is a tool for the living to gain wisdom, not a guide by which to live.\"",
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelLarge,
+            Center(
+              child: Text(
+                "\"${tip?.content}\"",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ),
             const SizedBox(height: 5),
-            const Text("- Martin Lurther Jr"),
+            Text("- ${tip?.author}"),
           ],
         ),
       ),
