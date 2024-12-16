@@ -5,6 +5,29 @@ class TaskListScreen extends StatelessWidget {
   final List<Task> tasks;
 
   const TaskListScreen({super.key, required this.tasks});
+  void final(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Center(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+          ),
+          padding: EdgeInsets.all(16),
+          child: Text(
+            message,
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(Duration(seconds: 1.5), () {
+      overlayEntry.remove();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +41,9 @@ class TaskListScreen extends StatelessWidget {
           trailing: Checkbox(
             value: task.isCompleted,
             onChanged: (value) {
-              // Toggle task completion
+              if (!task.isCompleted) {
+                final(context, 'Well Done! Task Complete!');
+              }
             },
           ),
         );
