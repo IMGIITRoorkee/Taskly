@@ -14,11 +14,44 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Taskly'),
+        title: Text(
+          'Taskly',
+          style: Theme.of(context).textTheme.displaySmall,
+        ),
         actions: const [ThemeModeSwitch()],
       ),
-      body: const Center(
-        child: Text('Welcome to Taskly!'),
+      body: Padding(
+        padding: const EdgeInsets.only(
+          left: 8.0,
+          right: 8,
+          top: 24,
+        ),
+        child: Card(
+          color: Theme.of(context).primaryColorLight,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Text(
+                    "Tip of the Day",
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "\"Tragedy is a tool for the living to gain wisdom, not a guide by which to live.\"",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: 5),
+                const Text("- Martin Lurther Jr"),
+              ],
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
