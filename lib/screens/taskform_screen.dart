@@ -23,7 +23,6 @@ class TaskFormScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Save task
-                Navigator.pop(context);
               },
               child: const Text('Save Task'),
             ),
