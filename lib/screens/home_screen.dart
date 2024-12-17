@@ -64,6 +64,15 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
+  void _onOptionSelected(String option) {
+    setState(() {
+      if (option == "Delete all tasks") {
+        tasks = [];
+        TaskStorage.saveTasks(tasks);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +81,20 @@ class _HomeScreenState extends State<HomeScreen> {
           'Taskly',
           style: Theme.of(context).textTheme.displaySmall,
         ),
-        actions: const [ThemeModeSwitch()],
+        actions: [
+          const ThemeModeSwitch(),
+          PopupMenuButton<String>(
+            onSelected: _onOptionSelected,
+            itemBuilder: (context) {
+              return [
+                const PopupMenuItem(
+                  value: "Delete all tasks",
+                  child: Text("Delete all tasks"),
+                ),
+              ];
+            },
+          ),
+        ],
       ),
       body: ListView(
         children: [
