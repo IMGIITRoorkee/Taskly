@@ -7,7 +7,8 @@ class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
 
-  const TaskListScreen({super.key, required this.tasks, required this.onToggle});
+  const TaskListScreen(
+      {super.key, required this.tasks, required this.onToggle});
 
   @override
   State<TaskListScreen> createState() => _TaskListScreenState();
@@ -18,6 +19,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: widget.tasks.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final task = widget.tasks[index];
         return Slidable(
