@@ -9,6 +9,9 @@ import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 
+// Enum to represent options in the menu
+enum TaskOption { deleteAll }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -64,9 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
-  void _onOptionSelected(String option) {
+  // Handle task options, now using the enum
+  void _onOptionSelected(TaskOption option) {
     setState(() {
-      if (option == "Delete all tasks") {
+      if (option == TaskOption.deleteAll) {
         tasks = [];
         TaskStorage.saveTasks(tasks);
       }
@@ -83,12 +87,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           const ThemeModeSwitch(),
-          PopupMenuButton<String>(
+          PopupMenuButton<TaskOption>(
             onSelected: _onOptionSelected,
             itemBuilder: (context) {
               return [
                 const PopupMenuItem(
-                  value: "Delete all tasks",
+                  value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
               ];
