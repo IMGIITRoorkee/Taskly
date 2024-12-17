@@ -56,9 +56,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       title: _titleController.text,
                       description: _descController.text,
                     );
-                    // this task object can be further passed to other screens
                     Fluttertoast.showToast(msg: "Task Successfully Created!");
-                    Navigator.pop(context);
+                    Navigator.pop(context,task);
                   }
                 },
                 child: const Text('Save Task'),
