@@ -5,12 +5,15 @@ class TaskListScreen extends StatelessWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
 
-  const TaskListScreen({super.key, required this.tasks, required this.onToggle});
+  const TaskListScreen(
+      {super.key, required this.tasks, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: tasks.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final task = tasks[index];
         return ListTile(
