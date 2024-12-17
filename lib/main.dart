@@ -34,6 +34,7 @@ class _TasklyAppState extends State<TasklyApp> {
           title: 'Taskly',
           theme: ThemeData(
             primarySwatch: Colors.blue,
+            fontFamily: 'Quicksand',
           ),
           darkTheme: ThemeData.dark(),
           themeMode: value.darkTheme ? ThemeMode.dark : ThemeMode.light,
