@@ -1,27 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:taskly/models/task.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:taskly/task_storage.dart';
 
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
   final Function(int) onEdit;
 
-  const TaskListScreen({
-    super.key,
-    required this.tasks,
-    required this.onToggle,
-    required this.onEdit,
-  });
+  const TaskListScreen(
+      {super.key, required this.tasks, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: tasks.length,
+      itemCount: widget.tasks.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
-        final task = tasks[index];
-        return ListTile(
+        final task = widget.tasks[index];
+        return Slidable(
+          endActionPane: ActionPane(motion: StretchMotion(), children: [
+            SlidableAction(
+              onPressed: (context) async {
+                setState(() {
+                widget.tasks.removeAt(index);
+                });
+                await TaskStorage.saveTasks(widget.tasks);
+
+              },
+              icon: Icons.delete,
+              foregroundColor: Colors.red,
+            ),
+          ]),
+          child: ListTile(
           title: Text(
             task.title,
             style: TextStyle(
