@@ -4,9 +4,14 @@ import 'package:taskly/models/task.dart';
 class TaskListScreen extends StatelessWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
+  final Function(int) onEdit;
 
-  const TaskListScreen(
-      {super.key, required this.tasks, required this.onToggle});
+  const TaskListScreen({
+    super.key,
+    required this.tasks,
+    required this.onToggle,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +29,19 @@ class TaskListScreen extends StatelessWidget {
             ),
           ),
           subtitle: Text(task.description),
-          trailing: Checkbox(
-            value: task.isCompleted,
-            onChanged: (value) => onToggle(index, value),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: () => onEdit(index),
+                icon: const Icon(Icons.edit),
+              ),
+              const SizedBox(width: 5),
+              Checkbox(
+                value: task.isCompleted,
+                onChanged: (value) => onToggle(index, value),
+              ),
+            ],
           ),
         );
       },

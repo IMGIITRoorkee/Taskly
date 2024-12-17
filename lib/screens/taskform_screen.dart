@@ -3,7 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/models/task.dart';
 
 class TaskFormScreen extends StatefulWidget {
-  const TaskFormScreen({super.key});
+  final Task? task;
+  const TaskFormScreen({super.key, this.task});
 
   @override
   State<TaskFormScreen> createState() => _TaskFormScreenState();
@@ -11,14 +12,23 @@ class TaskFormScreen extends StatefulWidget {
 
 class _TaskFormScreenState extends State<TaskFormScreen> {
   final _key = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _descController;
+  late bool editing;
+
+  @override
+  void initState() {
+    super.initState();
+    editing = widget.task != null;
+    _titleController = TextEditingController(text: widget.task?.title);
+    _descController = TextEditingController(text: widget.task?.description);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Task'),
+        title: editing ? const Text("Edit Task") : const Text('Add Task'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -56,8 +66,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       title: _titleController.text,
                       description: _descController.text,
                     );
-                    Fluttertoast.showToast(msg: "Task Successfully Created!");
-                    Navigator.pop(context,task);
+                    Fluttertoast.showToast(
+                        msg: editing
+                            ? "Task Successfully Edited!"
+                            : "Task Successfully Created!");
+                    Navigator.pop(context, task);
                   }
                 },
                 child: const Text('Save Task'),
