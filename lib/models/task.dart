@@ -5,21 +5,6 @@ class Task {
 
   Task({required this.title, this.description = '', this.isCompleted = false});
 
-  set setTitle(String t) {
-    title = t;
-  }
-
-  set setDescription(String d) {
-    description = d;
-  }
-
-  void updateTask(Task task) {
-    setTitle = task.title;
-    setDescription = task.description;
-
-    //update more properties (like color, due date etc)
-  }
-
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
     return {
