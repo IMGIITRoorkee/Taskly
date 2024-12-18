@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taskly/enums/taskoptions.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
@@ -9,8 +10,7 @@ import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 
-// Enum to represent options in the menu
-enum TaskOption { deleteAll }
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
