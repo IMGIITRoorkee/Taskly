@@ -41,6 +41,8 @@ dependencies:
   provider: ^6.1.2
   http: ^1.2.2
   multiple_result: ^5.1.0
+  introduction_screen: ^3.1.14
+  flutter_svg: ^2.0.16
 
 dev_dependencies:
   flutter_test:
@@ -65,8 +67,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/svg/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
