@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/service/speech_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -26,6 +27,31 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _descController = TextEditingController(text: widget.task?.description);
   }
 
+  void _startListening(TextEditingController controller) {
+    if (!SpeechService.isEnabled()) {
+      Fluttertoast.showToast(msg: "Something went wrong.");
+      return;
+    }
+
+    SpeechService.startListening(
+      (result) => controller.text = result.recognizedWords,
+    );
+    setState(() {});
+  }
+
+  void _toggleMic(TextEditingController controller) async {
+    if (!SpeechService.isEnabled()) {
+      await SpeechService.intialize();
+    }
+
+    if (SpeechService.isListening()) {
+      SpeechService.stopListening();
+      setState(() {});
+    } else {
+      _startListening(controller);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,8 +70,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 decoration: InputDecoration(
                   labelText: 'Task Title',
                   suffixIcon: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.mic),
+                    onPressed: () => _toggleMic(_titleController),
+                    icon: Icon(SpeechService.isListening()
+                        ? Icons.circle_rounded
+                        : Icons.mic),
                   ),
                 ),
                 validator: (value) {
@@ -60,8 +88,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 decoration: InputDecoration(
                   labelText: 'Task Description',
                   suffixIcon: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.mic),
+                    onPressed: () => _toggleMic(_descController),
+                    icon: Icon(SpeechService.isListening()
+                        ? Icons.circle_rounded
+                        : Icons.mic),
                   ),
                 ),
                 validator: (value) {
