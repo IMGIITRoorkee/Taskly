@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taskly/enums/taskoptions.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
@@ -8,6 +9,8 @@ import 'package:taskly/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -64,6 +67,29 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
+  // Handle task options, now using the enum
+  void _onOptionSelected(TaskOption option) {
+    setState(() {
+      if (option == TaskOption.deleteAll) {
+        tasks = [];
+        TaskStorage.saveTasks(tasks);
+      }
+    });
+  void _editTask(int index) async {
+    final newTask = await Navigator.push<Task>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskFormScreen(task: tasks[index]),
+      ),
+    );
+
+    if (newTask != null) {
+      tasks[index] = newTask;
+      setState(() {});
+      await TaskStorage.saveTasks(tasks);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +98,20 @@ class _HomeScreenState extends State<HomeScreen> {
           'Taskly',
           style: Theme.of(context).textTheme.displaySmall,
         ),
-        actions: const [ThemeModeSwitch()],
+        actions: [
+          const ThemeModeSwitch(),
+          PopupMenuButton<TaskOption>(
+            onSelected: _onOptionSelected,
+            itemBuilder: (context) {
+              return [
+                const PopupMenuItem(
+                  value: TaskOption.deleteAll,
+                  child: Text("Delete all tasks"),
+                ),
+              ];
+            },
+          ),
+        ],
       ),
       body: ListView(
         children: [
@@ -89,7 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           tasks.isEmpty
               ? const Center(child: Text('No tasks yet!'))
-              : TaskListScreen(tasks: tasks, onToggle: _toggleTaskCompletion),
+              : TaskListScreen(
+                  tasks: tasks,
+                  onToggle: _toggleTaskCompletion,
+                  onEdit: _editTask,
+                ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
