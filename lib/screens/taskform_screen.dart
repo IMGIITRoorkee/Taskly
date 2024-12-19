@@ -20,7 +20,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       appBar: AppBar(
         title: const Text('Add Task'),
       ),
-      body: SigleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
