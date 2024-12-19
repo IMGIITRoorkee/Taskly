@@ -41,7 +41,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Task Title'),
+                decoration: InputDecoration(
+                  labelText: 'Task Title',
+                  suffixIcon: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.mic),
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Title cannot be empty!";
@@ -51,8 +57,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ),
               TextFormField(
                 controller: _descController,
-                decoration:
-                    const InputDecoration(labelText: 'Task Description'),
+                decoration: InputDecoration(
+                  labelText: 'Task Description',
+                  suffixIcon: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.mic),
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Description cannot be empty!";
