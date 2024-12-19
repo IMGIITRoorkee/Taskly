@@ -15,11 +15,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late bool editing;
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
   var hasDeadline = false;
   DateTime? deadline;
-  
+
   @override
   void initState() {
     super.initState();
@@ -69,8 +67,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               //   })
               // }, title: const Text('Has Deadline')),
 
-
-
               // Date picker field for a DateTime value (deadline)
               ElevatedButton(
                 onPressed: () async {
@@ -90,8 +86,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 child: const Text('Select Deadline'),
               ),
 
-
-
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
@@ -100,7 +94,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       title: _titleController.text,
                       description: _descController.text,
                       hasDeadline: hasDeadline,
-                      deadline: hasDeadline ? deadline: null,
+                      deadline: hasDeadline ? deadline : null,
                     );
                     Fluttertoast.showToast(
                         msg: editing

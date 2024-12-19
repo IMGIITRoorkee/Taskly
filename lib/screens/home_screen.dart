@@ -10,8 +10,6 @@ import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 
-
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -75,6 +73,23 @@ class _HomeScreenState extends State<HomeScreen> {
         TaskStorage.saveTasks(tasks);
       }
     });
+
+    void _editTask(int index) async {
+      final newTask = await Navigator.push<Task>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TaskFormScreen(task: tasks[index]),
+        ),
+      );
+
+      if (newTask != null) {
+        tasks[index] = newTask;
+        setState(() {});
+        await TaskStorage.saveTasks(tasks);
+      }
+    }
+  }
+
   void _editTask(int index) async {
     final newTask = await Navigator.push<Task>(
       context,
