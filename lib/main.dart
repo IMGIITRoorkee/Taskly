@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taskly/providers/theme_provider.dart';
 import 'package:taskly/screens/home_screen.dart';
+import 'package:taskly/screens/intro_screen.dart';
+import 'package:taskly/service/local_db_service.dart';
 
-void main() {
-  runApp(const TasklyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  bool first = await LocalDbService.getFirstTime();
+  runApp(TasklyApp(
+    isFirstTime: first,
+  ));
 }
 
 class TasklyApp extends StatefulWidget {
-  const TasklyApp({super.key});
+  final bool isFirstTime;
+  const TasklyApp({
+    super.key,
+    required this.isFirstTime,
+  });
 
   @override
   State<TasklyApp> createState() => _TasklyAppState();
@@ -38,7 +48,7 @@ class _TasklyAppState extends State<TasklyApp> {
           ),
           darkTheme: ThemeData.dark(),
           themeMode: value.darkTheme ? ThemeMode.dark : ThemeMode.light,
-          home: const HomeScreen(),
+          home: widget.isFirstTime ? const IntroScreen() : const HomeScreen(),
         ),
       ),
     );

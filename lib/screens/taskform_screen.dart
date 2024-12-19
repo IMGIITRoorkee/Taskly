@@ -15,7 +15,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late bool editing;
-
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  var hasDeadline = false;
+  DateTime? deadline;
+  
   @override
   void initState() {
     super.initState();
@@ -58,6 +62,36 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   return null;
                 },
               ),
+              // boolformfield for a bool value (hasDeadline)
+              // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
+              //   setState(() {
+              //     hasDeadline = value!;
+              //   })
+              // }, title: const Text('Has Deadline')),
+
+
+
+              // Date picker field for a DateTime value (deadline)
+              ElevatedButton(
+                onPressed: () async {
+                  final selectedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2025),
+                  );
+                  if (selectedDate != null) {
+                    setState(() {
+                      hasDeadline = true;
+                      deadline = selectedDate;
+                    });
+                  }
+                },
+                child: const Text('Select Deadline'),
+              ),
+
+
+
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
@@ -65,6 +99,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     Task task = Task(
                       title: _titleController.text,
                       description: _descController.text,
+                      hasDeadline: hasDeadline,
+                      deadline: hasDeadline ? deadline: null,
                     );
                     Fluttertoast.showToast(
                         msg: editing

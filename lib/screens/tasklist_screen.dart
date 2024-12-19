@@ -68,6 +68,24 @@ class _TaskListScreenState extends State<TaskListScreen> {
               ],
             ),
           ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(task.description),
+              Row(
+                children: [
+                if (task.hasDeadline)
+                Text('Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'),
+              if (task.hasDeadline && task.deadline.isBefore(DateTime.now()) && !task.isCompleted)
+                Icon(Icons.warning, color: Colors.red,),
+              ]         ),
+            ]
+          ),
+          trailing: Checkbox(
+            value: task.isCompleted,
+            onChanged: (value) => widget.onToggle(index, value),
+          ),
+        ),
         );
       },
     );
