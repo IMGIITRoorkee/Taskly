@@ -64,6 +64,21 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
+  void _editTask(int index) async {
+    final newTask = await Navigator.push<Task>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskFormScreen(task: tasks[index]),
+      ),
+    );
+
+    if (newTask != null) {
+      tasks[index] = newTask;
+      setState(() {});
+      await TaskStorage.saveTasks(tasks);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,7 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           tasks.isEmpty
               ? const Center(child: Text('No tasks yet!'))
-              : TaskListScreen(tasks: tasks, onToggle: _toggleTaskCompletion),
+              : TaskListScreen(
+                  tasks: tasks,
+                  onToggle: _toggleTaskCompletion,
+                  onEdit: _editTask,
+                ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
