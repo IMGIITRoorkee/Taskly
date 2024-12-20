@@ -19,6 +19,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   var hasDeadline = false;
   DateTime? deadline;
 
+  bool isTitleListening = false;
+
   @override
   void initState() {
     super.initState();
@@ -27,14 +29,21 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _descController = TextEditingController(text: widget.task?.description);
   }
 
-  void _startListening(TextEditingController controller) {
+  void _startListening(TextEditingController controller) async {
     if (!SpeechService.isEnabled()) {
       Fluttertoast.showToast(msg: "Something went wrong.");
       return;
     }
 
-    SpeechService.startListening(
-      (result) => controller.text = result.recognizedWords,
+    await SpeechService.startListening(
+      (result) {
+        controller.text = result.recognizedWords;
+      },
+      (status) {
+        if (status == "done") {
+          setState(() {});
+        }
+      },
     );
     setState(() {});
   }
@@ -45,7 +54,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
 
     if (SpeechService.isListening()) {
-      SpeechService.stopListening();
+      await SpeechService.stopListening();
       setState(() {});
     } else {
       _startListening(controller);
@@ -70,10 +79,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 decoration: InputDecoration(
                   labelText: 'Task Title',
                   suffixIcon: IconButton(
-                    onPressed: () => _toggleMic(_titleController),
-                    icon: Icon(SpeechService.isListening()
+                    onPressed: () {
+                      isTitleListening = true;
+                      _toggleMic(_titleController);
+                    },
+                    icon: Icon(SpeechService.isListening() & isTitleListening
                         ? Icons.circle_rounded
-                        : Icons.mic),
+                        : Icons.mic_rounded),
                   ),
                 ),
                 validator: (value) {
@@ -88,10 +100,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 decoration: InputDecoration(
                   labelText: 'Task Description',
                   suffixIcon: IconButton(
-                    onPressed: () => _toggleMic(_descController),
-                    icon: Icon(SpeechService.isListening()
+                    onPressed: () {
+                      isTitleListening = false;
+                      _toggleMic(_descController);
+                    },
+                    icon: Icon(SpeechService.isListening() & !isTitleListening
                         ? Icons.circle_rounded
-                        : Icons.mic),
+                        : Icons.mic_rounded),
                   ),
                 ),
                 validator: (value) {

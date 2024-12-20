@@ -12,16 +12,22 @@ class SpeechService {
     _enabled = await _speechToText.initialize();
   }
 
-  static void startListening(Function(SpeechRecognitionResult) onResult) async {
+  static Future startListening(
+    Function(SpeechRecognitionResult) onResult,
+    Function(String) onStatusUpdate,
+  ) async {
     if (_speechToText.isNotListening) {
       await _speechToText.listen(
         onResult: onResult,
-        listenOptions: SpeechListenOptions(cancelOnError: true),
+        listenOptions: SpeechListenOptions(
+          cancelOnError: true,
+        ),
       );
+      _speechToText.statusListener = onStatusUpdate;
     }
   }
 
-  static void stopListening() async {
+  static Future stopListening() async {
     if (_speechToText.isListening) {
       await _speechToText.stop();
     }
