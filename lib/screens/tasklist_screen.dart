@@ -5,8 +5,8 @@ class TaskListScreen extends StatelessWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
 
+  const TaskListScreen({super.key, required this.tasks, required this.onToggle});
 
-  const TaskListScreen({super.key, required this.tasks});
   void opfinal(BuildContext context, String message) {
     final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
@@ -14,6 +14,7 @@ class TaskListScreen extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.black,
+            borderRadius: BorderRadius.circular(8),
           ),
           padding: EdgeInsets.all(16),
           child: Text(
@@ -26,12 +27,10 @@ class TaskListScreen extends StatelessWidget {
 
     overlay.insert(overlayEntry);
 
-    Future.delayed(Duration(seconds: 1.5), () {
+    Future.delayed(Duration(seconds: 2), () {
       overlayEntry.remove();
     });
   }
-=======
-  const TaskListScreen({super.key, required this.tasks, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +48,11 @@ class TaskListScreen extends StatelessWidget {
           subtitle: Text(task.description),
           trailing: Checkbox(
             value: task.isCompleted,
-
             onChanged: (value) {
               if (!task.isCompleted) {
                 opfinal(context, 'Well Done! Task Complete!');
               }
-            },
-=======
-            onChanged: (value) => onToggle(index, value),
-
+              onToggle(index, value);            },
           ),
         );
       },
