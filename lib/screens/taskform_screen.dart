@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late bool editing;
   var hasDeadline = false;
   DateTime? deadline;
+    Color selectedColor = Colors.blue;
 
   @override
   void initState() {
@@ -24,7 +26,36 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
+    selectedColor = widget.task?.color ?? Colors.blue;
   }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick Task Color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: selectedColor,
+            onColorChanged: (color) {
+              setState(() {
+                selectedColor = color;
+              });
+            },
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Select'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +90,19 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   }
                   return null;
                 },
+              ),
+               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text('Task Color:', style: TextStyle(fontSize: 16)),
+                  ElevatedButton(
+                    onPressed: _showColorPicker,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selectedColor,
+                    ),
+                    child: const Text('Pick Color'),
+                  ),
+                ],
               ),
               // boolformfield for a bool value (hasDeadline)
               // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
@@ -95,6 +139,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       description: _descController.text,
                       hasDeadline: hasDeadline,
                       deadline: hasDeadline ? deadline : null,
+                      color: selectedColor,
                     );
                     Fluttertoast.showToast(
                         msg: editing

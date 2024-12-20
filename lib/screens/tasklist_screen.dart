@@ -44,43 +44,50 @@ class _TaskListScreenState extends State<TaskListScreen> {
               ),
             ],
           ),
-          child: ListTile(
-            title: Text(
-              task.title,
-              style: TextStyle(
-                decoration:
-                    task.isCompleted ? TextDecoration.lineThrough : null,
-              ),
-            ),
-            subtitle:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(task.description),
-              Row(children: [
-                if (task.hasDeadline)
-                  Text(
-                      'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'),
-                if (task.hasDeadline &&
-                    task.deadline.isBefore(DateTime.now()) &&
-                    !task.isCompleted)
-                  const Icon(
-                    Icons.warning,
-                    color: Colors.red,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+            child: Container(
+              color: task.color.withOpacity(0.2),
+              child: ListTile(
+                title: Text(
+                  task.title,
+                  style: TextStyle(
+                    decoration:
+                        task.isCompleted ? TextDecoration.lineThrough : null,
+                        fontWeight: FontWeight.bold,  
                   ),
-              ]),
-            ]),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  onPressed: () => widget.onEdit(index),
-                  icon: const Icon(Icons.edit),
                 ),
-                const SizedBox(width: 5),
-                Checkbox(
-                  value: task.isCompleted,
-                  onChanged: (value) => widget.onToggle(index, value),
+                subtitle:
+                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(task.description),
+                  Row(children: [
+                    if (task.hasDeadline)
+                      Text(
+                          'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'),
+                    if (task.hasDeadline &&
+                        task.deadline.isBefore(DateTime.now()) &&
+                        !task.isCompleted)
+                      const Icon(
+                        Icons.warning,
+                        color: Colors.red,
+                      ),
+                  ]),
+                ]),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => widget.onEdit(index),
+                      icon: const Icon(Icons.edit),
+                    ),
+                    const SizedBox(width: 5),
+                    Checkbox(
+                      value: task.isCompleted,
+                      onChanged: (value) => widget.onToggle(index, value),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
