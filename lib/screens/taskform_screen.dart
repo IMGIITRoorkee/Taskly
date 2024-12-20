@@ -49,10 +49,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   void _toggleMic(TextEditingController controller) async {
-    if (!SpeechService.isEnabled()) {
-      await SpeechService.intialize();
-    }
-
     if (SpeechService.isListening()) {
       await SpeechService.stopListening();
       setState(() {});
