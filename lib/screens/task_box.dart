@@ -21,59 +21,61 @@ class TaskBoxWidget extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Task Title
-                Text(
-                  task.title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Task Title
+                  Text(
+                    task.title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-
-                // Task Description
-                Text(
-                  task.description,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 10),
-
-                // Deadline (if applicable)
-                if (task.hasDeadline)
+                  const SizedBox(height: 10),
+            
+                  // Task Description
+                  Text(
+                    task.description,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 10),
+            
+                  // Deadline (if applicable)
+                  if (task.hasDeadline)
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+            
+                  const SizedBox(height: 20),
+            
+                  // Edit and Delete Buttons
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Icon(Icons.calendar_today, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}',
-                        style: const TextStyle(fontSize: 16),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: onEdit,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: onDelete,
                       ),
                     ],
                   ),
-
-                const SizedBox(height: 20),
-
-                // Edit and Delete Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: onEdit,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: onDelete,
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
