@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/task_storage.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -45,6 +46,24 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ],
           ),
           child: ListTile(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => TaskBoxWidget(
+                  task: task,
+                  onEdit: () => widget.onEdit(index),
+                  onDelete: () async {
+                    setState(() {
+                      widget.tasks.removeAt(index);
+                    });
+                    await TaskStorage.saveTasks(widget.tasks);
+                    Navigator.of(context)
+                        .pop(); // Close the dialog after deletion
+                  },
+                  onClose: () => Navigator.of(context).pop(),
+                ),
+              );
+            },
             title: Text(
               task.title,
               style: TextStyle(
