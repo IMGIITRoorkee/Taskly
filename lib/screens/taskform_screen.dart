@@ -92,26 +92,40 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
-                  controller: _descController,
-                  decoration: InputDecoration(
-                    labelText: 'Task Description',
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        isTitleListening = false;
-                        _toggleMic(_descController);
-                      },
-                      icon: Icon(SpeechService.isListening() & !isTitleListening
-                          ? Icons.circle_rounded
-                          : Icons.mic_rounded),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  child: TextFormField(
+                    controller: _descController,
+                    decoration: InputDecoration(
+                      labelText: 'Task Description',
+                      hintText: 'Enter a detailed description...',
+                      alignLabelWithHint: true,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          isTitleListening = false;
+                          _toggleMic(_descController);
+                        },
+                        icon: Icon(
+                            SpeechService.isListening() & !isTitleListening
+                                ? Icons.circle_rounded
+                                : Icons.mic_rounded),
+                      ),
+                      border:
+                          OutlineInputBorder(), // Adds a border for a defined look
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 12), // Adds padding inside the text field
                     ),
+                    maxLines:
+                        6, // Provides a reasonable height for multi-line input
+                    minLines: 4, // Ensures the field has a minimum height
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Description cannot be empty!";
+                      }
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Description cannot be empty!";
-                    }
-                    return null;
-                  },
                 ),
                 // boolformfield for a bool value (hasDeadline)
                 // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
