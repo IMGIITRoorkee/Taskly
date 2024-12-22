@@ -111,8 +111,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                                 : Icons.mic_rounded),
                       ),
                       border:
-                          OutlineInputBorder(), // Adds a border for a defined look
-                      contentPadding: EdgeInsets.symmetric(
+                          const OutlineInputBorder(), // Adds a border for a defined look
+                      contentPadding: const EdgeInsets.symmetric(
                           vertical: 15,
                           horizontal: 12), // Adds padding inside the text field
                     ),
