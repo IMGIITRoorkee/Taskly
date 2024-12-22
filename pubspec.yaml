@@ -43,6 +43,7 @@ dependencies:
   multiple_result: ^5.1.0
   introduction_screen: ^3.1.14
   flutter_svg: ^2.0.16
+  speech_to_text: ^7.0.0
   flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
@@ -70,6 +71,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/svg/
+    - assets/sounds/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
