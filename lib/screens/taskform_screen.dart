@@ -50,10 +50,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: TextFormField(
                   controller: _descController,
-                  decoration:
-                      const InputDecoration(labelText: 'Task Description'),
+                  decoration: const InputDecoration(
+                    labelText: 'Task Description',
+                    hintText: 'Enter a detailed description...',
+                    alignLabelWithHint: true,
+                    border:
+                        OutlineInputBorder(), // Adds a border for a defined look
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 12), // Adds padding inside the text field
+                  ),
+                  maxLines:
+                      6, // Provides a reasonable height for multi-line input
+                  minLines: 4, // Ensures the field has a minimum height
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Description cannot be empty!";
@@ -61,6 +74,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     return null;
                   },
                 ),
+              ),
                 // boolformfield for a bool value (hasDeadline)
                 // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
                 //   setState(() {
