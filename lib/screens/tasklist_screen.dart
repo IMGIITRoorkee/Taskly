@@ -73,7 +73,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ),
             subtitle:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(task.description),
+              Text(
+                task.description.length > 30
+                    ? '${task.description.substring(0, 30)}...'
+                    : task.description,
+              ),
               Row(children: [
                 if (task.hasDeadline)
                   Text(
