@@ -74,17 +74,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: InputDecoration(
-                  labelText: 'Task Title',
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      isTitleListening = true;
-                      _toggleMic(_titleController);
-                    },
-                    icon: Icon(SpeechService.isListening() & isTitleListening
-                        ? Icons.circle_rounded
-                        : Icons.mic_rounded),
+                    labelText: 'Task Title',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        isTitleListening = true;
+                        _toggleMic(_titleController);
+                      },
+                      icon: Icon(SpeechService.isListening() & isTitleListening
+                          ? Icons.circle_rounded
+                          : Icons.mic_rounded),
+                    ),
                   ),
-                ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Title cannot be empty!";
@@ -95,24 +95,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 TextFormField(
                   controller: _descController,
                   decoration: InputDecoration(
-                  labelText: 'Task Description',
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      isTitleListening = false;
-                      _toggleMic(_descController);
-                    },
-                    icon: Icon(SpeechService.isListening() & !isTitleListening
-                        ? Icons.circle_rounded
-                        : Icons.mic_rounded),
+                    labelText: 'Task Description',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        isTitleListening = false;
+                        _toggleMic(_descController);
+                      },
+                      icon: Icon(SpeechService.isListening() & !isTitleListening
+                          ? Icons.circle_rounded
+                          : Icons.mic_rounded),
+                    ),
                   ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Description cannot be empty!";
-                  }
-                  return null;
-                },
-              ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Description cannot be empty!";
@@ -126,7 +119,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 //     hasDeadline = value!;
                 //   })
                 // }, title: const Text('Has Deadline')),
-        
+
                 // Date picker field for a DateTime value (deadline)
                 ElevatedButton(
                   onPressed: () async {
@@ -145,7 +138,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   },
                   child: const Text('Select Deadline'),
                 ),
-        
+
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
