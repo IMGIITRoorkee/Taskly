@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/service/speech_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -18,12 +19,42 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   var hasDeadline = false;
   DateTime? deadline;
 
+  bool isTitleListening = false;
+
   @override
   void initState() {
     super.initState();
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
+  }
+
+  void _startListening(TextEditingController controller) async {
+    if (!SpeechService.isEnabled()) {
+      Fluttertoast.showToast(msg: "Something went wrong.");
+      return;
+    }
+
+    await SpeechService.startListening(
+      (result) {
+        controller.text = result.recognizedWords;
+      },
+      (status) {
+        if (status == "done") {
+          setState(() {});
+        }
+      },
+    );
+    setState(() {});
+  }
+
+  void _toggleMic(TextEditingController controller) async {
+    if (SpeechService.isListening()) {
+      await SpeechService.stopListening();
+      setState(() {});
+    } else {
+      _startListening(controller);
+    }
   }
 
   @override
@@ -42,7 +73,18 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               children: [
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Task Title'),
+                  decoration: InputDecoration(
+                    labelText: 'Task Title',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        isTitleListening = true;
+                        _toggleMic(_titleController);
+                      },
+                      icon: Icon(SpeechService.isListening() & isTitleListening
+                          ? Icons.circle_rounded
+                          : Icons.mic_rounded),
+                    ),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Title cannot be empty!";
@@ -50,38 +92,48 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     return null;
                   },
                 ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15.0),
-                child: TextFormField(
-                  controller: _descController,
-                  decoration: const InputDecoration(
-                    labelText: 'Task Description',
-                    hintText: 'Enter a detailed description...',
-                    alignLabelWithHint: true,
-                    border:
-                        OutlineInputBorder(), // Adds a border for a defined look
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 12), // Adds padding inside the text field
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  child: TextFormField(
+                    controller: _descController,
+                    decoration: InputDecoration(
+                      labelText: 'Task Description',
+                      hintText: 'Enter a detailed description...',
+                      alignLabelWithHint: true,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          isTitleListening = false;
+                          _toggleMic(_descController);
+                        },
+                        icon: Icon(
+                            SpeechService.isListening() & !isTitleListening
+                                ? Icons.circle_rounded
+                                : Icons.mic_rounded),
+                      ),
+                      border:
+                          const OutlineInputBorder(), // Adds a border for a defined look
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 12), // Adds padding inside the text field
+                    ),
+                    maxLines:
+                        6, // Provides a reasonable height for multi-line input
+                    minLines: 4, // Ensures the field has a minimum height
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Description cannot be empty!";
+                      }
+                      return null;
+                    },
                   ),
-                  maxLines:
-                      6, // Provides a reasonable height for multi-line input
-                  minLines: 4, // Ensures the field has a minimum height
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Description cannot be empty!";
-                    }
-                    return null;
-                  },
                 ),
-              ),
                 // boolformfield for a bool value (hasDeadline)
                 // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
                 //   setState(() {
                 //     hasDeadline = value!;
                 //   })
                 // }, title: const Text('Has Deadline')),
-        
+
                 // Date picker field for a DateTime value (deadline)
                 ElevatedButton(
                   onPressed: () async {
@@ -100,7 +152,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   },
                   child: const Text('Select Deadline'),
                 ),
-        
+
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {

@@ -4,6 +4,7 @@ import 'package:taskly/providers/theme_provider.dart';
 import 'package:taskly/screens/home_screen.dart';
 import 'package:taskly/screens/intro_screen.dart';
 import 'package:taskly/service/local_db_service.dart';
+import 'package:taskly/service/speech_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +33,7 @@ class _TasklyAppState extends State<TasklyApp> {
     super.initState();
     themeProvider =
         ThemeProvider(dark: Theme.of(context).brightness == Brightness.dark);
+    SpeechService.intialize();
   }
 
   @override
