@@ -158,18 +158,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   ),
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Task Color:', style: TextStyle(fontSize: 16)),
                     ElevatedButton(
                       onPressed: _showColorPicker,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedColor,
-                      ),
-                      child: const Text('Pick Color'),
+                      child: const Text('Choose Task Color'),
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
                 // boolformfield for a bool value (hasDeadline)
                 // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
                 //   setState(() {
