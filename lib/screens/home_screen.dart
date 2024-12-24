@@ -73,21 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
         TaskStorage.saveTasks(tasks);
       }
     });
-
-    void _editTask(int index) async {
-      final newTask = await Navigator.push<Task>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TaskFormScreen(task: tasks[index]),
-        ),
-      );
-
-      if (newTask != null) {
-        tasks[index] = newTask;
-        setState(() {});
-        await TaskStorage.saveTasks(tasks);
-      }
-    }
   }
 
   void _editTask(int index) async {

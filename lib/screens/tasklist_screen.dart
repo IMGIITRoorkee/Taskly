@@ -22,6 +22,9 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  int? deletedIndex;
+  Task? deletedTask;
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -55,11 +58,35 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   onEdit: () => widget.onEdit(index),
                   onDelete: () async {
                     setState(() {
+                      deletedTask = widget.tasks[index];
+                      deletedIndex = index;
                       widget.tasks.removeAt(index);
                     });
-                    await TaskStorage.saveTasks(widget.tasks);
                     Navigator.of(context)
                         .pop(); // Close the dialog after deletion
+
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
+                          SnackBar(
+                            content: const Text("Deleted accidentally?"),
+                            action: SnackBarAction(
+                              label: "Undo",
+                              onPressed: () {
+                                widget.tasks
+                                    .insert(deletedIndex!, deletedTask!);
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                        )
+                        .closed
+                        .then(
+                      (value) async {
+                        if (value != SnackBarClosedReason.action) {
+                          await TaskStorage.saveTasks(widget.tasks);
+                        }
+                      },
+                    );
                   },
                   onClose: () => Navigator.of(context).pop(),
                 ),
