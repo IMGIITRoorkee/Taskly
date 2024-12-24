@@ -4,8 +4,9 @@ class Task {
   bool isCompleted;
   DateTime deadline;
   bool hasDeadline;
+  Task? dependency;
 
-  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false})
+  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false, this.dependency})
       : deadline = deadline ?? DateTime.now();
 
   // Convert a Task object to JSON
@@ -16,6 +17,7 @@ class Task {
       'isCompleted': isCompleted,
       'deadline': deadline.toIso8601String(),
       'hasDeadline': hasDeadline,
+      'dependency': dependency?.toJson(),
     };
   }
 
@@ -27,6 +29,7 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
+      dependency: json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
     );
   }
 }
