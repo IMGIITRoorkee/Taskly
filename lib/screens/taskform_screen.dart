@@ -28,6 +28,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
+    hasDeadline = widget.task?.hasDeadline ?? false;
+    deadline = widget.task?.deadline;
   }
 
   void _startListening(TextEditingController controller) async {
