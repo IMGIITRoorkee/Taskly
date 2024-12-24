@@ -3,6 +3,7 @@ import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/task_storage.dart';
+import 'package:taskly/utils/date_utils.dart';
 
 class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
@@ -81,7 +82,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
               Row(children: [
                 if (task.hasDeadline)
                   Text(
-                      'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'),
+                      'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
                 if (task.hasDeadline &&
                     task.deadline.isBefore(DateTime.now()) &&
                     !task.isCompleted)
