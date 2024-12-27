@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
+import 'package:taskly/utils/date_utils.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -174,7 +175,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 //   })
                 // }, title: const Text('Has Deadline')),
 
+                const SizedBox(height: 5),
                 // Date picker field for a DateTime value (deadline)
+                if (deadline != null)
+                  Text(
+                      "Selected Deadline - ${MyDateUtils.getFormattedDate(deadline!)}"),
+                const SizedBox(
+                  height: 5,
+                ),
                 ElevatedButton(
                   onPressed: () async {
                     final selectedDate = await showDatePicker(

@@ -3,6 +3,7 @@ import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/task_storage.dart';
+import 'package:taskly/utils/date_utils.dart';
 
 class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
@@ -21,6 +22,9 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  int? deletedIndex;
+  Task? deletedTask;
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -58,11 +62,35 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       onEdit: () => widget.onEdit(index),
                       onDelete: () async {
                         setState(() {
+                          deletedTask = widget.tasks[index];
+                          deletedIndex = index;
                           widget.tasks.removeAt(index);
                         });
-                        await TaskStorage.saveTasks(widget.tasks);
                         Navigator.of(context)
                             .pop(); // Close the dialog after deletion
+              
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(
+                              SnackBar(
+                                content: const Text("Deleted accidentally?"),
+                                action: SnackBarAction(
+                                  label: "Undo",
+                                  onPressed: () {
+                                    widget.tasks
+                                        .insert(deletedIndex!, deletedTask!);
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                            )
+                            .closed
+                            .then(
+                          (value) async {
+                            if (value != SnackBarClosedReason.action) {
+                              await TaskStorage.saveTasks(widget.tasks);
+                            }
+                          },
+                        );
                       },
                       onClose: () => Navigator.of(context).pop(),
                     ),
@@ -85,7 +113,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   Row(children: [
                     if (task.hasDeadline)
                       Text(
-                          'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'),
+                          'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
                     if (task.hasDeadline &&
                         task.deadline.isBefore(DateTime.now()) &&
                         !task.isCompleted)
