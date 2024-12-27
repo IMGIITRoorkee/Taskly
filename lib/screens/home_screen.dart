@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/enums/taskoptions.dart';
 import 'package:taskly/models/tip.dart';
@@ -18,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const platform = MethodChannel('com.example.taskly/deeplink');
   List<Task> tasks = [];
   Tip? tip;
 
@@ -26,6 +28,28 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetch();
     _loadTasks();
+    _listenForDeepLink();
+  }
+
+  void _listenForDeepLink() {
+    platform.setMethodCallHandler(
+      (call) async {
+        if (call.method == "onDeepLink") {
+          final String? data = call.arguments as String?;
+          if (data != null) {
+            Uri deeplink = Uri.parse(data);
+            int index = tasks.indexWhere(
+              (element) => element.id == deeplink.queryParameters['id'],
+            );
+            if (index == -1) {
+              Fluttertoast.showToast(msg: "Task could not be found!");
+            } else {
+              _editTask(index);
+            }
+          }
+        }
+      },
+    );
   }
 
   void _fetch() async {

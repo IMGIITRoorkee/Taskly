@@ -39,4 +39,9 @@ class Task {
       id: json['id'],
     );
   }
+
+  @override
+  String toString() {
+    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
+  }
 }
