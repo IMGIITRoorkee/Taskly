@@ -1,12 +1,20 @@
 class Task {
+  String id;
   String title;
   String description;
   bool isCompleted;
   DateTime deadline;
   bool hasDeadline;
 
-  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false})
-      : deadline = deadline ?? DateTime.now();
+  Task(
+      {required this.title,
+      this.description = '',
+      this.isCompleted = false,
+      DateTime? deadline,
+      this.hasDeadline = false,
+      String? id})
+      : deadline = deadline ?? DateTime.now(),
+        id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -16,6 +24,7 @@ class Task {
       'isCompleted': isCompleted,
       'deadline': deadline.toIso8601String(),
       'hasDeadline': hasDeadline,
+      'id': id,
     };
   }
 
@@ -27,6 +36,7 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
+      id: json['id'],
     );
   }
 }
