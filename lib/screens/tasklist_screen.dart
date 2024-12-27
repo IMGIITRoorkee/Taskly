@@ -50,7 +50,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 6,horizontal: 8),
             child: Container(
               color: task.color.withOpacity(0.2),
               child: ListTile(
