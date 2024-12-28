@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/kudos_storage.dart';
+import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
+import 'package:taskly/screens/kudos_details.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
@@ -19,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
+  Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
 
   @override
@@ -26,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetch();
     _loadTasks();
+    _loadKudos();
   }
 
   void _fetch() async {
@@ -57,13 +62,60 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     await TaskStorage.saveTasks(tasks);
   }
+void _toggleTaskCompletion(int index, bool? value) async {
+  setState(() {
+    tasks[index].isCompleted = value ?? false;
 
-  void _toggleTaskCompletion(int index, bool? value) async {
-    setState(() {
-      tasks[index].isCompleted = value ?? false;
-    });
-    await TaskStorage.saveTasks(tasks);
-  }
+    if (tasks[index].isCompleted) {
+      // Task is marked as completed
+      if (tasks[index].hasDeadline) {
+        var days_diff =
+            tasks[index].deadline.difference(DateTime.now()).inDays;
+        kudos.score += days_diff;
+
+        String status = (days_diff > 0)
+            ? "$days_diff days before deadline"
+            : (days_diff == 0)
+                ? "on time"
+                : "${-days_diff} days after deadline";
+
+        String title = "Completed '${tasks[index].title}' $status";
+
+        kudos.history.add([title, days_diff.toString()]);
+      } else {
+        kudos.score += 1;
+        kudos.history.add(["Completed '${tasks[index].title}'", "1"]);
+      }
+    } else {
+      // Task is marked as incomplete
+      if (tasks[index].hasDeadline) {
+        for (int i = 0; i < kudos.history.length; i++) {
+          // Find the matching task in history
+          if (kudos.history[i][0].startsWith("Completed '${tasks[index].title}'")) {
+            // Reduce the score by the previously added value
+            int previousScore = int.parse(kudos.history[i][1]);
+            kudos.score -= previousScore;
+
+            // Add a new history entry to indicate score reduction
+            String reductionTitle =
+                "Score reduced for '${tasks[index].title}'";
+            kudos.history.add([reductionTitle, (-previousScore).toString()]);
+
+            break;
+          }
+        }
+      } else {
+        // For tasks without deadlines, reduce score by 1
+        kudos.score -= 1;
+        kudos.history.add(["Score reduced for '${tasks[index].title}'", "-1"]);
+      }
+    }
+  });
+
+  await KudosStorage.saveKudos(kudos);
+  await TaskStorage.saveTasks(tasks);
+}
+
 
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
@@ -71,6 +123,12 @@ class _HomeScreenState extends State<HomeScreen> {
       if (option == TaskOption.deleteAll) {
         tasks = [];
         TaskStorage.saveTasks(tasks);
+      } else if (option == TaskOption.showKudos) {
+        showDialog(
+          context: context,
+          builder: (context) => KudosDetails(
+              kudos: kudos, onClose: () => Navigator.of(context).pop()),
+        );
       }
     });
   }
@@ -88,6 +146,14 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {});
       await TaskStorage.saveTasks(tasks);
     }
+  }
+
+  // Load kudos from SharedPreferences
+  void _loadKudos() async {
+    Kudos loadedKudos = await KudosStorage.loadKudos();
+    setState(() {
+      kudos = loadedKudos;
+    });
   }
 
   @override
@@ -108,6 +174,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
+                const PopupMenuItem(
+                  value: TaskOption.showKudos,
+                  child: Text("My Kudos"),
+                )
               ];
             },
           ),
