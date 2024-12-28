@@ -49,4 +49,16 @@ class Task {
       color: Color(json['color']),
     );
   }
+
+  void toggleCompletion() {
+    if (!isRecurring) {
+      isCompleted = !isCompleted;
+      return;
+    }
+
+    if (hasDeadline) {
+      deadline = deadline.add(Duration(days: recurringDays));
+      return;
+    }
+  }
 }

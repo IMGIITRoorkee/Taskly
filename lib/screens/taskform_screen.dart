@@ -221,6 +221,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               },
             );
             if (days != null) {
+              if (!hasDeadline) {
+                hasDeadline = true;
+                deadline = DateTime.now();
+              }
               setState(() {
                 repeatInterval = days;
               });
