@@ -151,7 +151,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     ];
   }
 
-  List<Widget> _buildDeadlineRepeat() {
+  List<Widget> _buildColorDeadlineRepeat() {
     Widget deadlineTrailing;
     if (deadline != null) {
       deadlineTrailing = Text(MyDateUtils.getFormattedDate(deadline!));
@@ -168,10 +168,18 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
     return [
       Card(
-        margin: EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
         child: ListTile(
-          title: Text("Colour"),
-          subtitle: Text("Select a colour for your task"),
+          title: const Text("Colour"),
+          subtitle: const Text("Select a colour for your task"),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: selectedColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
           onTap: _showColorPicker,
         ),
       ),
@@ -269,7 +277,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               children: [
                 ..._buildTextfields(),
                 const SizedBox(height: 5),
-                ..._buildDeadlineRepeat(),
+                ..._buildColorDeadlineRepeat(),
               ],
             ),
           ),
