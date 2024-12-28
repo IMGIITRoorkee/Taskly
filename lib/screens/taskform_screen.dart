@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/widgets/repeat_select_card.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -19,6 +20,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late bool editing;
   var hasDeadline = false;
   DateTime? deadline;
+  int? repeatInterval;
 
   bool isTitleListening = false;
 
@@ -117,29 +119,65 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     ];
   }
 
-  List<Widget> _buildDeadline() {
+  List<Widget> _buildDeadlineRepeat() {
+    Widget deadlineTrailing;
+    if (deadline != null) {
+      deadlineTrailing = Text(MyDateUtils.getFormattedDate(deadline!));
+    } else {
+      deadlineTrailing = const Icon(Icons.date_range_rounded);
+    }
+
+    Widget repeatTrailing;
+    if (repeatInterval != null) {
+      repeatTrailing = Text("$repeatInterval days");
+    } else {
+      repeatTrailing = const Icon(Icons.repeat_rounded);
+    }
+
     return [
-      if (deadline != null)
-        Text("Selected Deadline - ${MyDateUtils.getFormattedDate(deadline!)}"),
-      const SizedBox(
-        height: 5,
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Deadline"),
+          subtitle: const Text("Select a deadline for your task"),
+          trailing: deadlineTrailing,
+          onTap: () async {
+            final selectedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2025),
+            );
+            if (selectedDate != null) {
+              setState(() {
+                hasDeadline = true;
+                deadline = selectedDate;
+              });
+            }
+          },
+        ),
       ),
-      ElevatedButton(
-        onPressed: () async {
-          final selectedDate = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2025),
-          );
-          if (selectedDate != null) {
-            setState(() {
-              hasDeadline = true;
-              deadline = selectedDate;
-            });
-          }
-        },
-        child: const Text('Select Deadline'),
+      const SizedBox(height: 16),
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Repeat"),
+          subtitle: const Text("Select repeat interval for your task"),
+          trailing: repeatTrailing,
+          onTap: () async {
+            int? days = await showDialog(
+              context: context,
+              builder: (context) {
+                return const RepeatSelectCard();
+              },
+            );
+            if (days != null) {
+              setState(() {
+                repeatInterval = days;
+              });
+            }
+          },
+        ),
       ),
     ];
   }
@@ -153,6 +191,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             description: _descController.text,
             hasDeadline: hasDeadline,
             deadline: hasDeadline ? deadline : null,
+            isRecurring: repeatInterval != null,
+            recurringDays: repeatInterval,
           );
           Fluttertoast.showToast(
               msg: editing
@@ -171,6 +211,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       appBar: AppBar(
         title: editing ? const Text("Edit Task") : const Text('Add Task'),
       ),
+      persistentFooterButtons: [
+        SizedBox(
+          width: double.infinity,
+          child: _buildSaveButton(),
+        ),
+      ],
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -181,9 +227,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               children: [
                 ..._buildTextfields(),
                 const SizedBox(height: 5),
-                ..._buildDeadline(),
+                ..._buildDeadlineRepeat(),
                 const SizedBox(height: 20),
-                _buildSaveButton(),
               ],
             ),
           ),
