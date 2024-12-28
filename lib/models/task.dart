@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
+
 class Task {
   String title;
   String description;
   bool isCompleted;
   DateTime deadline;
   bool hasDeadline;
+  Color color;
   bool isRecurring;
   int recurringDays;
 
@@ -13,6 +16,7 @@ class Task {
       this.isCompleted = false,
       DateTime? deadline,
       this.hasDeadline = false,
+      this.color = Colors.blue,
       this.isRecurring = false,
       int? recurringDays})
       : deadline = deadline ?? DateTime.now(),
