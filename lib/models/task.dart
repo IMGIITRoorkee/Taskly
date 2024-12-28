@@ -32,6 +32,7 @@ class Task {
       'hasDeadline': hasDeadline,
       'isRecurring': isRecurring,
       'recurringDays': recurringDays,
+      'color': color.value,
     };
   }
 
@@ -45,6 +46,7 @@ class Task {
       hasDeadline: json['hasDeadline'],
       isRecurring: json['isRecurring'],
       recurringDays: json['recurringDays'],
+      color: Color(json['color']),
     );
   }
 }
