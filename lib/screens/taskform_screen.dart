@@ -168,6 +168,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
     return [
       Card(
+        margin: EdgeInsets.all(0),
+        child: ListTile(
+          title: Text("Colour"),
+          subtitle: Text("Select a colour for your task"),
+          onTap: _showColorPicker,
+        ),
+      ),
+      const SizedBox(height: 16),
+      Card(
         margin: const EdgeInsets.all(0),
         child: ListTile(
           title: const Text("Deadline"),
@@ -261,7 +270,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ..._buildTextfields(),
                 const SizedBox(height: 5),
                 ..._buildDeadlineRepeat(),
-                const SizedBox(height: 20),
               ],
             ),
           ),
