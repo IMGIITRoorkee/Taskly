@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Task {
   String id;
   String title;
@@ -5,6 +7,7 @@ class Task {
   bool isCompleted;
   DateTime deadline;
   bool hasDeadline;
+  Color color;
 
   Task(
       {required this.title,
@@ -12,6 +15,7 @@ class Task {
       this.isCompleted = false,
       DateTime? deadline,
       this.hasDeadline = false,
+      this.color = Colors.blue,
       String? id})
       : deadline = deadline ?? DateTime.now(),
         id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
@@ -24,6 +28,7 @@ class Task {
       'isCompleted': isCompleted,
       'deadline': deadline.toIso8601String(),
       'hasDeadline': hasDeadline,
+      'color': color.value,
       'id': id,
     };
   }
@@ -36,6 +41,7 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
+      color: Color(json['color']),
       id: json['id'],
     );
   }
