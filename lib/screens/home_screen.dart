@@ -62,60 +62,55 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     await TaskStorage.saveTasks(tasks);
   }
-void _toggleTaskCompletion(int index, bool? value) async {
-  setState(() {
-    tasks[index].isCompleted = value ?? false;
 
-    if (tasks[index].isCompleted) {
-      // Task is marked as completed
-      if (tasks[index].hasDeadline) {
-        var days_diff =
-            tasks[index].deadline.difference(DateTime.now()).inDays;
-        kudos.score += days_diff;
+  void _toggleTaskCompletion(int index, bool? value) async {
+    setState(() {
+      tasks[index].isCompleted = value ?? false;
 
-        String status = (days_diff > 0)
-            ? "$days_diff days before deadline"
-            : (days_diff == 0)
-                ? "on time"
-                : "${-days_diff} days after deadline";
+      if (tasks[index].isCompleted) {
+        if (tasks[index].hasDeadline) {
+          var days_diff =
+              tasks[index].deadline.difference(DateTime.now()).inDays;
+          kudos.score += days_diff;
 
-        String title = "Completed '${tasks[index].title}' $status";
+          String status = (days_diff > 0)
+              ? "$days_diff days before deadline"
+              : (days_diff == 0)
+                  ? "on time"
+                  : "${-days_diff} days after deadline";
 
-        kudos.history.add([title, days_diff.toString()]);
-      } else {
-        kudos.score += 1;
-        kudos.history.add(["Completed '${tasks[index].title}'", "1"]);
-      }
-    } else {
-      // Task is marked as incomplete
-      if (tasks[index].hasDeadline) {
-        for (int i = 0; i < kudos.history.length; i++) {
-          // Find the matching task in history
-          if (kudos.history[i][0].startsWith("Completed '${tasks[index].title}'")) {
-            // Reduce the score by the previously added value
-            int previousScore = int.parse(kudos.history[i][1]);
-            kudos.score -= previousScore;
+          String title = "Completed '${tasks[index].title}' $status";
 
-            // Add a new history entry to indicate score reduction
-            String reductionTitle =
-                "Score reduced for '${tasks[index].title}'";
-            kudos.history.add([reductionTitle, (-previousScore).toString()]);
-
-            break;
-          }
+          kudos.history.add([title, days_diff.toString()]);
+        } else {
+          kudos.score += 1;
+          kudos.history.add(["Completed '${tasks[index].title}'", "1"]);
         }
       } else {
-        // For tasks without deadlines, reduce score by 1
-        kudos.score -= 1;
-        kudos.history.add(["Score reduced for '${tasks[index].title}'", "-1"]);
+        if (tasks[index].hasDeadline) {
+          for (int i = 0; i < kudos.history.length; i++) {
+            if (kudos.history[i][0]
+                .startsWith("Completed '${tasks[index].title}'")) {
+              int previousScore = int.parse(kudos.history[i][1]);
+              kudos.score -= previousScore;
+
+              String reductionTitle =
+                  "Score reduced for '${tasks[index].title}'";
+              kudos.history.add([reductionTitle, (-previousScore).toString()]);
+              break;
+            }
+          }
+        } else {
+          kudos.score -= 1;
+          kudos.history
+              .add(["Score reduced for '${tasks[index].title}'", "-1"]);
+        }
       }
-    }
-  });
+    });
 
-  await KudosStorage.saveKudos(kudos);
-  await TaskStorage.saveTasks(tasks);
-}
-
+    await KudosStorage.saveKudos(kudos);
+    await TaskStorage.saveTasks(tasks);
+  }
 
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
@@ -148,7 +143,6 @@ void _toggleTaskCompletion(int index, bool? value) async {
     }
   }
 
-  // Load kudos from SharedPreferences
   void _loadKudos() async {
     Kudos loadedKudos = await KudosStorage.loadKudos();
     setState(() {
