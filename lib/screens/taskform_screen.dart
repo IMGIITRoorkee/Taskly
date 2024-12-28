@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/utils/date_utils.dart';
@@ -22,6 +23,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   var hasDeadline = false;
   DateTime? deadline;
   Task? selectedDependency;
+  Color selectedColor = Colors.blue;
 
   bool isTitleListening = false;
 
@@ -33,6 +35,36 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _descController = TextEditingController(text: widget.task?.description);
     selectedDependency = widget.task?.dependency;
     widget.availableTasks.remove(widget.task);
+    hasDeadline = widget.task?.hasDeadline ?? false;
+    deadline = widget.task?.deadline;
+    selectedColor = widget.task?.color ?? Colors.blue;
+  }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick Task Color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: selectedColor,
+            onColorChanged: (color) {
+              setState(() {
+                selectedColor = color;
+              });
+            },
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Select'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _startListening(TextEditingController controller) async {
@@ -61,6 +93,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     } else {
       _startListening(controller);
     }
+
   }
 
 
@@ -134,7 +167,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     },
                   ),
                 ),
-            
+
                 // Dropdown for selecting a dependency task
                 DropdownButtonFormField<String?>(
                   value: selectedDependency?.title, // Compare by title
@@ -160,6 +193,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   },
                   decoration: const InputDecoration(labelText: 'Dependency'),
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _showColorPicker,
+                      child: const Text('Choose Task Color'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // boolformfield for a bool value (hasDeadline)
+                // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
+                //   setState(() {
+                //     hasDeadline = value!;
+                //   })
+                // }, title: const Text('Has Deadline')),
+
 
                 const SizedBox(height: 5),
                 // Date picker field for a DateTime value (deadline)
@@ -198,6 +248,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         deadline: hasDeadline ? deadline : null,
                         dependency:
                             selectedDependency, // Set the selected dependency
+                        color: selectedColor,
                       );
                       Fluttertoast.showToast(
                           msg: editing
