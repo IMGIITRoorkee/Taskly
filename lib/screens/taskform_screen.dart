@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
+import 'package:taskly/utils/date_utils.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -18,6 +20,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late bool editing;
   var hasDeadline = false;
   DateTime? deadline;
+  Color selectedColor = Colors.blue;
 
   bool isTitleListening = false;
 
@@ -27,6 +30,36 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
+    hasDeadline = widget.task?.hasDeadline ?? false;
+    deadline = widget.task?.deadline;
+    selectedColor = widget.task?.color ?? Colors.blue;
+  }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick Task Color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: selectedColor,
+            onColorChanged: (color) {
+              setState(() {
+                selectedColor = color;
+              });
+            },
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Select'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _startListening(TextEditingController controller) async {
@@ -55,6 +88,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     } else {
       _startListening(controller);
     }
+
   }
 
   @override
@@ -127,6 +161,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     },
                   ),
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _showColorPicker,
+                      child: const Text('Choose Task Color'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
                 // boolformfield for a bool value (hasDeadline)
                 // CheckboxListTile(value: hasDeadline, onChanged: (value)=>{
                 //   setState(() {
@@ -134,7 +178,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 //   })
                 // }, title: const Text('Has Deadline')),
 
+                const SizedBox(height: 5),
                 // Date picker field for a DateTime value (deadline)
+                if (deadline != null)
+                  Text(
+                      "Selected Deadline - ${MyDateUtils.getFormattedDate(deadline!)}"),
+                const SizedBox(
+                  height: 5,
+                ),
                 ElevatedButton(
                   onPressed: () async {
                     final selectedDate = await showDatePicker(
@@ -162,6 +213,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         description: _descController.text,
                         hasDeadline: hasDeadline,
                         deadline: hasDeadline ? deadline : null,
+                        color: selectedColor,
                       );
                       Fluttertoast.showToast(
                           msg: editing

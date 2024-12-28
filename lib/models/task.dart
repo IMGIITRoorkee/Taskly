@@ -1,11 +1,14 @@
+import 'package:flutter/material.dart';
+
 class Task {
   String title;
   String description;
   bool isCompleted;
   DateTime deadline;
   bool hasDeadline;
+  Color color;
 
-  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false})
+  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false,this.color = Colors.blue })
       : deadline = deadline ?? DateTime.now();
 
   // Convert a Task object to JSON
@@ -16,6 +19,7 @@ class Task {
       'isCompleted': isCompleted,
       'deadline': deadline.toIso8601String(),
       'hasDeadline': hasDeadline,
+      'color': color.value,
     };
   }
 
@@ -27,6 +31,7 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
+      color: Color(json['color']),
     );
   }
 }
