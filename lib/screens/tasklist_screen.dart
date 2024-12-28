@@ -98,12 +98,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     ),
                   );
                 },
-                title: Text(
-                  task.title,
-                  style: TextStyle(
-                    decoration:
-                        task.isCompleted ? TextDecoration.lineThrough : null,
-                  ),
+                title: Row(
+                  children: [
+                    Text(
+                      task.title,
+                      style: TextStyle(
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    if (task.isRecurring) const Icon(Icons.repeat_rounded)
+                  ],
                 ),
                 subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

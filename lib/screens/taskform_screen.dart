@@ -35,6 +35,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     hasDeadline = widget.task?.hasDeadline ?? false;
     deadline = widget.task?.deadline;
     selectedColor = widget.task?.color ?? Colors.blue;
+    repeatInterval =
+        widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
   }
 
   void _showColorPicker() {
