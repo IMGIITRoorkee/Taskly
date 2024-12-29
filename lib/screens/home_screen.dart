@@ -20,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Tip? tip;
+  bool showtip = false;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     (await RandomTipService().getRandomTip()).when(
       (success) {
         tip = success;
+        showtip = true;
         setState(() {});
       },
       (error) {
@@ -72,6 +74,9 @@ class _HomeScreenState extends State<HomeScreen> {
         tasks = [];
         TaskStorage.saveTasks(tasks);
       }
+      if (option == TaskOption.toggleTipVisibility) {
+        showtip = !showtip;
+      }
     });
   }
 
@@ -108,6 +113,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleTipVisibility,
+                  child: showtip ? const Text("Hide tip of the day") : const Text("Show tip of the day"),
+                ),
               ];
             },
           ),
@@ -121,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: TipOfDayCard(tip: tip),
             ),
             secondChild: Container(),
-            crossFadeState: tip != null
+            crossFadeState: showtip
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
             duration: const Duration(seconds: 1),
