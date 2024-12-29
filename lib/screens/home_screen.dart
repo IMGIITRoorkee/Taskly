@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:taskly/constants.dart';
+import 'package:taskly/resources/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
-import 'package:taskly/kudos_storage.dart';
+import 'package:taskly/service/kudos_service.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
-import 'package:taskly/screens/kudos_details.dart';
+import 'package:taskly/widgets/kudos_details_dialog.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
-import 'package:taskly/task_storage.dart';
+import 'package:taskly/service/task_service.dart';
 import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Load tasks from SharedPreferences
   void _loadTasks() async {
-    List<Task> loadedTasks = await TaskStorage.loadTasks();
+    List<Task> loadedTasks = await TaskService.loadTasks();
     setState(() {
       tasks = loadedTasks;
     });
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       tasks.add(task);
     });
-    await TaskStorage.saveTasks(tasks);
+    await TaskService.saveTasks(tasks);
   }
 
   void _toggleTaskCompletion(int index, bool? value) async {
@@ -110,8 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
-    await KudosStorage.saveKudos(kudos);
-    await TaskStorage.saveTasks(tasks);
+    await KudosService.saveKudos(kudos);
+    await TaskService.saveTasks(tasks);
   }
 
   // Handle task options, now using the enum
@@ -119,8 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       if (option == TaskOption.deleteAll) {
         tasks = [];
-        TaskStorage.saveTasks(tasks);
-        KudosStorage.saveKudos(Kudos(score: 0, history: []));
+        TaskService.saveTasks(tasks);
+        KudosService.saveKudos(Kudos(score: 0, history: []));
       } else if (option == TaskOption.showKudos) {
         showDialog(
           context: context,
@@ -142,12 +142,12 @@ class _HomeScreenState extends State<HomeScreen> {
     if (newTask != null) {
       tasks[index] = newTask;
       setState(() {});
-      await TaskStorage.saveTasks(tasks);
+      await TaskService.saveTasks(tasks);
     }
   }
 
   void _loadKudos() async {
-    Kudos loadedKudos = await KudosStorage.loadKudos();
+    Kudos loadedKudos = await KudosService.loadKudos();
     setState(() {
       kudos = loadedKudos;
     });

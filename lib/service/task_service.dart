@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskly/models/task.dart';
 
-class TaskStorage {
+class TaskService {
   static const String _taskKey = 'tasks';
 
   static Future<void> saveTasks(List<Task> tasks) async {

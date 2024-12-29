@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ThemeStorage {
+class ThemeDataService {
   static const String _themeKey = 'theme';
 
   static Future<void> savetheme(bool isDark) async {

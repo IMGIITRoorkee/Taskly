@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taskly/themeData_storage.dart';
+import 'package:taskly/service/theme_data_service.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool _dark = false; // Default to false
@@ -11,7 +11,7 @@ class ThemeProvider extends ChangeNotifier {
 
   // Asynchronously load theme
   Future<void> _loadTheme() async {
-    bool storedTheme = await ThemeStorage.loadtheme(); // Load theme
+    bool storedTheme = await ThemeDataService.loadtheme(); // Load theme
     _dark = storedTheme; // Update the value
     notifyListeners(); // Notify UI
   }
@@ -20,7 +20,7 @@ class ThemeProvider extends ChangeNotifier {
 
   set darkTheme(bool value) {
     _dark = value;
-    ThemeStorage.savetheme(value); // Save updated value
+    ThemeDataService.savetheme(value); // Save updated value
     notifyListeners();
   }
 }
