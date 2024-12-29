@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskly/models/kudos.dart';
 
-class KudosStorage {
+class KudosService {
   static const String _kudosKey = 'kudos';
 
   static Future<void> saveKudos(Kudos kudos) async {
