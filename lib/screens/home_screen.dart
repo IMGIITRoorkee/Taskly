@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
 import 'package:taskly/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
@@ -70,40 +71,41 @@ class _HomeScreenState extends State<HomeScreen> {
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
           var days_diff =
-              tasks[index].deadline.difference(DateTime.now()).inDays;
+              tasks[index].deadline.difference(DateTime.now()).inDays + 1;
+          if (days_diff == 0) {
+            days_diff = 1;
+          }
           kudos.score += days_diff;
-
           String status = (days_diff > 0)
-              ? "$days_diff days before deadline"
+              ? completedBeforeDeadline(days_diff)
               : (days_diff == 0)
-                  ? "on time"
-                  : "${-days_diff} days after deadline";
+                  ? completedOnTime
+                  : completedAfterDeadline(days_diff.abs());
 
-          String title = "Completed '${tasks[index].title}' $status";
-
+          String title = "'${tasks[index].title}': $status";
           kudos.history.add([title, days_diff.toString()]);
         } else {
           kudos.score += 1;
-          kudos.history.add(["Completed '${tasks[index].title}'", "1"]);
+          kudos.history
+              .add([completeTaskWithNoDeadline(tasks[index].title), "1"]);
         }
       } else {
         if (tasks[index].hasDeadline) {
           for (int i = 0; i < kudos.history.length; i++) {
-            if (kudos.history[i][0]
-                .startsWith("Completed '${tasks[index].title}'")) {
+            if (kudos.history[i][0].startsWith("'${tasks[index].title}':")) {
+              print(kudos.history[i]);
               int previousScore = int.parse(kudos.history[i][1]);
               kudos.score -= previousScore;
-
-              String reductionTitle =
-                  "Score reduced for '${tasks[index].title}'";
-              kudos.history.add([reductionTitle, (-previousScore).toString()]);
+              kudos.history.add([
+                scoreReducedForTask(tasks[index].title),
+                (-previousScore).toString()
+              ]);
               break;
             }
           }
         } else {
           kudos.score -= 1;
-          kudos.history
-              .add(["Score reduced for '${tasks[index].title}'", "-1"]);
+          kudos.history.add([scoreReducedForTask(tasks[index].title), "-1"]);
         }
       }
     });
@@ -118,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (option == TaskOption.deleteAll) {
         tasks = [];
         TaskStorage.saveTasks(tasks);
+        KudosStorage.saveKudos(Kudos(score: 0, history: []));
       } else if (option == TaskOption.showKudos) {
         showDialog(
           context: context,

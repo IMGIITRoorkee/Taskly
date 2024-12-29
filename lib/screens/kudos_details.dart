@@ -19,7 +19,7 @@ class _KudosDetailsState extends State<KudosDetails> {
         children: [
           SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),  
               child: Column(
                 children: [
                   Text("Kudos: ${widget.kudos.score}", style: const TextStyle(fontSize: 24)),
