@@ -28,11 +28,12 @@ class TasklyApp extends StatefulWidget {
 class _TasklyAppState extends State<TasklyApp> {
   late ThemeProvider themeProvider;
 
+
   @override
   void initState() {
     super.initState();
     themeProvider =
-        ThemeProvider(dark: Theme.of(context).brightness == Brightness.dark);
+        ThemeProvider();
     SpeechService.intialize();
   }
 
