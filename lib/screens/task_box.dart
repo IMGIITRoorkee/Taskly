@@ -6,6 +6,7 @@ class TaskBoxWidget extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onClose;
+  final VoidCallback onShare;
 
   const TaskBoxWidget({
     super.key,
@@ -13,6 +14,7 @@ class TaskBoxWidget extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onClose,
+    required this.onShare,
   });
 
   @override
@@ -37,14 +39,14 @@ class TaskBoxWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-            
+
                   // Task Description
                   Text(
                     task.description,
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 10),
-            
+
                   // Deadline (if applicable)
                   if (task.hasDeadline)
                     Row(
@@ -57,13 +59,17 @@ class TaskBoxWidget extends StatelessWidget {
                         ),
                       ],
                     ),
-            
+
                   const SizedBox(height: 20),
-            
+
                   // Edit and Delete Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.share_rounded),
+                        onPressed: onShare,
+                      ),
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: onEdit,

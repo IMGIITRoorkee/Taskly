@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/utils/share_utils.dart';
 
 class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
@@ -50,7 +51,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6,horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             child: Container(
               color: task.color.withOpacity(0.2),
               child: ListTile(
@@ -60,6 +61,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     builder: (context) => TaskBoxWidget(
                       task: task,
                       onEdit: () => widget.onEdit(index),
+                      onShare: () => ShareUtils.shareTask(task),
                       onDelete: () async {
                         setState(() {
                           deletedTask = widget.tasks[index];
@@ -68,7 +70,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         });
                         Navigator.of(context)
                             .pop(); // Close the dialog after deletion
-              
+
                         ScaffoldMessenger.of(context)
                             .showSnackBar(
                               SnackBar(
@@ -103,26 +105,27 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         task.isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
-                subtitle:
-                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(
-                    task.description.length > 30
-                        ? '${task.description.substring(0, 30)}...'
-                        : task.description,
-                  ),
-                  Row(children: [
-                    if (task.hasDeadline)
+                subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                          'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
-                    if (task.hasDeadline &&
-                        task.deadline.isBefore(DateTime.now()) &&
-                        !task.isCompleted)
-                      const Icon(
-                        Icons.warning,
-                        color: Colors.red,
+                        task.description.length > 30
+                            ? '${task.description.substring(0, 30)}...'
+                            : task.description,
                       ),
-                  ]),
-                ]),
+                      Row(children: [
+                        if (task.hasDeadline)
+                          Text(
+                              'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
+                        if (task.hasDeadline &&
+                            task.deadline.isBefore(DateTime.now()) &&
+                            !task.isCompleted)
+                          const Icon(
+                            Icons.warning,
+                            color: Colors.red,
+                          ),
+                      ]),
+                    ]),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
