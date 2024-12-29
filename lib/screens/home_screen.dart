@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
+  bool showtip = false;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     (await RandomTipService().getRandomTip()).when(
       (success) {
         tip = success;
+        showtip = true;
         setState(() {});
       },
       (error) {
@@ -128,6 +130,9 @@ class _HomeScreenState extends State<HomeScreen> {
               kudos: kudos, onClose: () => Navigator.of(context).pop()),
         );
       }
+      if (option == TaskOption.toggleTipVisibility) {
+        showtip = !showtip;
+      }
     });
   }
 
@@ -171,6 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleTipVisibility,
+                  child: showtip ? const Text("Hide tip of the day") : const Text("Show tip of the day"),
+                ),
                 const PopupMenuItem(
                   value: TaskOption.showKudos,
                   child: Text("My Kudos"),
@@ -188,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: TipOfDayCard(tip: tip),
             ),
             secondChild: Container(),
-            crossFadeState: tip != null
+            crossFadeState: showtip
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
             duration: const Duration(seconds: 1),
