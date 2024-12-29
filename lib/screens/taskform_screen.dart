@@ -7,7 +7,9 @@ import 'package:taskly/utils/date_utils.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
-  const TaskFormScreen({super.key, this.task});
+  final List<Task> availableTasks;
+
+  const TaskFormScreen({super.key, this.task, required this.availableTasks});
 
   @override
   State<TaskFormScreen> createState() => _TaskFormScreenState();
@@ -20,6 +22,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   late bool editing;
   var hasDeadline = false;
   DateTime? deadline;
+  Task? selectedDependency;
   Color selectedColor = Colors.blue;
 
   bool isTitleListening = false;
@@ -30,6 +33,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
+    selectedDependency = widget.task?.dependency;
+    widget.availableTasks.remove(widget.task);
     hasDeadline = widget.task?.hasDeadline ?? false;
     deadline = widget.task?.deadline;
     selectedColor = widget.task?.color ?? Colors.blue;
@@ -90,6 +95,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
 
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +167,32 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     },
                   ),
                 ),
+
+                // Dropdown for selecting a dependency task
+                DropdownButtonFormField<String?>(
+                  value: selectedDependency?.title, // Compare by title
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('None'),
+                    ),
+                    ...widget.availableTasks.map((task) {
+                      return DropdownMenuItem<String?>(
+                        value: task.title, // Use title as the value
+                        child: Text(task.title),
+                      );
+                    }).toList(),
+                  ],
+                  onChanged: (String? newTaskTitle) {
+                    setState(() {
+                      selectedDependency = widget.availableTasks.firstWhere(
+                        (task) => task.title == newTaskTitle,
+                        orElse: () => null as Task,
+                      );
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'Dependency'),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -177,6 +209,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 //     hasDeadline = value!;
                 //   })
                 // }, title: const Text('Has Deadline')),
+
 
                 const SizedBox(height: 5),
                 // Date picker field for a DateTime value (deadline)
@@ -213,6 +246,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         description: _descController.text,
                         hasDeadline: hasDeadline,
                         deadline: hasDeadline ? deadline : null,
+                        dependency:
+                            selectedDependency, // Set the selected dependency
                         color: selectedColor,
                       );
                       Fluttertoast.showToast(

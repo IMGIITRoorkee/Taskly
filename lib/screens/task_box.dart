@@ -37,14 +37,14 @@ class TaskBoxWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-            
+
                   // Task Description
                   Text(
                     task.description,
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 10),
-            
+
                   // Deadline (if applicable)
                   if (task.hasDeadline)
                     Row(
@@ -57,9 +57,36 @@ class TaskBoxWidget extends StatelessWidget {
                         ),
                       ],
                     ),
-            
+
                   const SizedBox(height: 20),
-            
+
+                  // Dependency (if applicable)
+                  if (task.dependency != null)
+                    Row(
+                      children: [
+                        const Icon(Icons.link, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Depends on: ${task.dependency!.title}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        if (task.dependency!.isCompleted)
+                          const Text(
+                            'Completed',
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.green),
+                          ),
+                        if (!task.dependency!.isCompleted)
+                          const Text(
+                            'Pending',
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.red),
+                          ),
+                      ],
+                    ),
+                  const SizedBox(height: 20),
+
                   // Edit and Delete Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,

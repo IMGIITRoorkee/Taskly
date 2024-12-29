@@ -126,6 +126,16 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (task.dependency != null && !task.dependency!.isCompleted)
+                      const Icon(
+                        Icons.link,
+                        color: Colors.blue,
+                      ),
+                    if (task.dependency != null && task.dependency!.isCompleted)
+                      const Icon(
+                        Icons.link,
+                        color: Colors.green,
+                      ),
                     IconButton(
                       onPressed: () => widget.onEdit(index),
                       icon: const Icon(Icons.edit),
