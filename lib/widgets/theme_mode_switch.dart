@@ -21,24 +21,14 @@ class _ThemeModeSwitchState extends State<ThemeModeSwitch> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Text(
-              "Dark Mode",
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(
-              width: 5,
-            ),
-            Switch(
-              value: themeProvider.darkTheme,
-              onChanged: (v) {
-                themeProvider.darkTheme = v;
-              },
-            ),
-          ],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      margin: const EdgeInsets.all(0),
+      child: IconButton(
+        onPressed: () => themeProvider.darkTheme = !themeProvider.darkTheme,
+        icon: Icon(
+          themeProvider.darkTheme
+              ? Icons.dark_mode_rounded
+              : Icons.light_mode_rounded,
         ),
       ),
     );
