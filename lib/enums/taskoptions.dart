@@ -2,4 +2,5 @@
 enum TaskOption {
   deleteAll,
   toggleTipVisibility,
+  showKudos
 }
