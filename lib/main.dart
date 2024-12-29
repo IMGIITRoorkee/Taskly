@@ -50,7 +50,11 @@ class _TasklyAppState extends State<TasklyApp> {
             primarySwatch: Colors.blue,
             fontFamily: 'Quicksand',
           ),
-          darkTheme: ThemeData.dark(),
+          darkTheme: ThemeData.dark().copyWith(
+            textTheme: ThemeData.dark().textTheme.apply(
+              fontFamily: 'Quicksand',
+            ),
+          ),
           themeMode: value.darkTheme ? ThemeMode.dark : ThemeMode.light,
           // home: widget.isFirstTime ? const IntroScreen() : const HomeScreen(),
           initialRoute: '/',
