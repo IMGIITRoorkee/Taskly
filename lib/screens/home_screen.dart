@@ -129,6 +129,10 @@ class _HomeScreenState extends State<HomeScreen> {
               kudos: kudos, onClose: () => Navigator.of(context).pop()),
         );
       } else if (option == TaskOption.deleteSelected) {
+        if (selectedIndexes.isEmpty) {
+          Fluttertoast.showToast(msg: "Long click on tasks to select them");
+          return;
+        }
         List<int> sorted = selectedIndexes.toList()
           ..sort((a, b) => b.compareTo(a));
 
