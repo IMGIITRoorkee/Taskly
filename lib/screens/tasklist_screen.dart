@@ -119,7 +119,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   }
                 },
                 onLongPress: () => _toggleTaskSelection(index),
-                enabled: true,
                 title: Text(
                   task.title,
                   style: TextStyle(
