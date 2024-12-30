@@ -9,12 +9,18 @@ class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
   final Function(int) onEdit;
+  final Set<int> selectedIndexes;
+  final Function(int) onSelectionAdded;
+  final Function(int) onSelectionRemoved;
 
   const TaskListScreen({
     super.key,
     required this.tasks,
     required this.onToggle,
     required this.onEdit,
+    required this.selectedIndexes,
+    required this.onSelectionAdded,
+    required this.onSelectionRemoved,
   });
 
   @override
@@ -24,6 +30,55 @@ class TaskListScreen extends StatefulWidget {
 class _TaskListScreenState extends State<TaskListScreen> {
   int? deletedIndex;
   Task? deletedTask;
+
+  void _showTaskDetails(Task task, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => TaskBoxWidget(
+        task: task,
+        onEdit: () => widget.onEdit(index),
+        onDelete: () async {
+          setState(() {
+            deletedTask = widget.tasks[index];
+            deletedIndex = index;
+            widget.tasks.removeAt(index);
+          });
+          Navigator.of(context).pop(); // Close the dialog after deletion
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+                SnackBar(
+                  content: const Text("Deleted accidentally?"),
+                  action: SnackBarAction(
+                    label: "Undo",
+                    onPressed: () {
+                      widget.tasks.insert(deletedIndex!, deletedTask!);
+                      setState(() {});
+                    },
+                  ),
+                ),
+              )
+              .closed
+              .then(
+            (value) async {
+              if (value != SnackBarClosedReason.action) {
+                await TaskStorage.saveTasks(widget.tasks);
+              }
+            },
+          );
+        },
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    );
+  }
+
+  void _toggleTaskSelection(int index) {
+    if (widget.selectedIndexes.contains(index)) {
+      widget.onSelectionRemoved(index);
+    } else {
+      widget.onSelectionAdded(index);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,52 +105,21 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6,horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             child: Container(
-              color: task.color.withOpacity(0.2),
+              color: widget.selectedIndexes.contains(index)
+                  ? Colors.grey.withOpacity(0.5)
+                  : task.color.withOpacity(0.2),
               child: ListTile(
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => TaskBoxWidget(
-                      task: task,
-                      onEdit: () => widget.onEdit(index),
-                      onDelete: () async {
-                        setState(() {
-                          deletedTask = widget.tasks[index];
-                          deletedIndex = index;
-                          widget.tasks.removeAt(index);
-                        });
-                        Navigator.of(context)
-                            .pop(); // Close the dialog after deletion
-              
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                              SnackBar(
-                                content: const Text("Deleted accidentally?"),
-                                action: SnackBarAction(
-                                  label: "Undo",
-                                  onPressed: () {
-                                    widget.tasks
-                                        .insert(deletedIndex!, deletedTask!);
-                                    setState(() {});
-                                  },
-                                ),
-                              ),
-                            )
-                            .closed
-                            .then(
-                          (value) async {
-                            if (value != SnackBarClosedReason.action) {
-                              await TaskStorage.saveTasks(widget.tasks);
-                            }
-                          },
-                        );
-                      },
-                      onClose: () => Navigator.of(context).pop(),
-                    ),
-                  );
+                  if (widget.selectedIndexes.isEmpty) {
+                    _showTaskDetails(task, index);
+                  } else {
+                    _toggleTaskSelection(index);
+                  }
                 },
+                onLongPress: () => _toggleTaskSelection(index),
+                enabled: true,
                 title: Text(
                   task.title,
                   style: TextStyle(
@@ -103,26 +127,27 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         task.isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
-                subtitle:
-                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(
-                    task.description.length > 30
-                        ? '${task.description.substring(0, 30)}...'
-                        : task.description,
-                  ),
-                  Row(children: [
-                    if (task.hasDeadline)
+                subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                          'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
-                    if (task.hasDeadline &&
-                        task.deadline.isBefore(DateTime.now()) &&
-                        !task.isCompleted)
-                      const Icon(
-                        Icons.warning,
-                        color: Colors.red,
+                        task.description.length > 30
+                            ? '${task.description.substring(0, 30)}...'
+                            : task.description,
                       ),
-                  ]),
-                ]),
+                      Row(children: [
+                        if (task.hasDeadline)
+                          Text(
+                              'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
+                        if (task.hasDeadline &&
+                            task.deadline.isBefore(DateTime.now()) &&
+                            !task.isCompleted)
+                          const Icon(
+                            Icons.warning,
+                            color: Colors.red,
+                          ),
+                      ]),
+                    ]),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

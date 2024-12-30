@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
+  Set<int> selectedIndexes = {};
 
   @override
   void initState() {
@@ -127,8 +128,33 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => KudosDetails(
               kudos: kudos, onClose: () => Navigator.of(context).pop()),
         );
+      } else if (option == TaskOption.deleteSelected) {
+        List<int> sorted = selectedIndexes.toList()
+          ..sort((a, b) => b.compareTo(a));
+
+        for (int i in sorted) {
+          tasks.removeAt(i);
+        }
+        setState(() {
+          selectedIndexes = {};
+          TaskStorage.saveTasks(tasks);
+        });
       }
     });
+  }
+
+  void _onSelectionAdded(int index) => setState(() {
+        selectedIndexes.add(index);
+        _showUpdatedSelectionsToast();
+      });
+
+  void _onSelectionRemoved(int index) => setState(() {
+        selectedIndexes.remove(index);
+        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
+      });
+
+  void _showUpdatedSelectionsToast() {
+    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
   }
 
   void _editTask(int index) async {
@@ -168,6 +194,10 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context) {
               return [
                 const PopupMenuItem(
+                  value: TaskOption.deleteSelected,
+                  child: Text("Delete selected tasks"),
+                ),
+                const PopupMenuItem(
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
@@ -199,6 +229,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   tasks: tasks,
                   onToggle: _toggleTaskCompletion,
                   onEdit: _editTask,
+                  selectedIndexes: selectedIndexes,
+                  onSelectionAdded: _onSelectionAdded,
+                  onSelectionRemoved: _onSelectionRemoved,
                 ),
         ],
       ),
