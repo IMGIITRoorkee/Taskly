@@ -1,5 +1,7 @@
+import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:taskly/enums/timer_types.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/utils/screen_utils.dart';
@@ -17,10 +19,58 @@ class TaskPomodoroScreen extends StatefulWidget {
 }
 
 class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
-  Duration _duration = const Duration(minutes: 25);
+  static const int numOfTasksForLongBreak = 4;
+
+  final CountDownController _controller = CountDownController();
+  late Duration _duration;
+
+  TimerTypes _currentTimerType = TimerTypes.work;
+  int _workIndex = 1; // the index of the consecutive work timer
+  bool _isStarted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateDuration();
+  }
+
+  void _updateDuration() {
+    _duration = Duration(minutes: _currentTimerType.defaultMinutes);
+  }
+
+  void _onCountdownComplete() {
+    if (_currentTimerType == TimerTypes.work) {
+      if (_workIndex == numOfTasksForLongBreak) {
+        _currentTimerType = TimerTypes.breakLarge;
+        _workIndex = 1;
+      } else {
+        _currentTimerType = TimerTypes.breakSmall;
+        _workIndex++;
+      }
+    } else {
+      _currentTimerType = TimerTypes.work;
+    }
+
+    _updateDuration();
+    _isStarted = false;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    final timerSize = ScreenUtils.getPercentOfWidth(context, 0.6);
+    final helperText = _currentTimerType == TimerTypes.work
+        ? "Stay focused for ${_duration.inMinutes} minutes"
+        : "Relax for ${_duration.inMinutes} minutes";
+    IconData actionIcon;
+    if (_isStarted) {
+      actionIcon = _controller.isPaused.value
+          ? Icons.play_arrow_rounded
+          : Icons.pause_rounded;
+    } else {
+      actionIcon = Icons.play_arrow_rounded;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Pomodoro Timer"),
@@ -59,19 +109,41 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
             ),
           ),
           const Spacing(large: true),
-          DurationPicker(
-            duration: _duration,
-            baseUnit: BaseUnit.minute,
-            width: ScreenUtils.getPercentOfWidth(context, 0.6),
-            height: ScreenUtils.getPercentOfWidth(context, 0.6),
-            lowerBound: const Duration(minutes: 15),
-            upperBound: const Duration(minutes: 60),
-            onChange: (value) => setState(() {
-              _duration = value;
-            }),
-          ),
+          if (_isStarted)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircularCountDownTimer(
+                width: timerSize,
+                height: timerSize,
+                duration: _duration.inSeconds,
+                isReverse: true,
+                fillColor: Theme.of(context).focusColor,
+                ringColor: Theme.of(context).highlightColor,
+                strokeWidth: 16,
+                isReverseAnimation: true,
+                textStyle: Theme.of(context).textTheme.displayMedium,
+                controller: _controller,
+                onComplete: _onCountdownComplete,
+                autoStart: true,
+              ),
+            ),
+          if (!_isStarted)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: DurationPicker(
+                duration: _duration,
+                baseUnit: BaseUnit.minute,
+                width: timerSize,
+                height: timerSize,
+                lowerBound: Duration(minutes: _currentTimerType.lowerBound),
+                upperBound: Duration(minutes: _currentTimerType.upperBound),
+                onChange: (value) => setState(() {
+                  _duration = value;
+                }),
+              ),
+            ),
           const Spacing(),
-          const Text("Stay focused for 25 mins"),
+          Text(helperText),
           const Spacing(large: true),
           Card(
             shape: RoundedRectangleBorder(
@@ -79,8 +151,20 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
             ),
             color: Theme.of(context).primaryColorLight,
             child: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.play_arrow_rounded),
+              onPressed: () {
+                if (!_isStarted) {
+                  setState(() {
+                    _isStarted = true;
+                  });
+                }
+                if (_controller.isPaused.value) {
+                  _controller.resume();
+                } else {
+                  _controller.pause();
+                }
+                setState(() {});
+              },
+              icon: Icon(actionIcon),
               iconSize: 48,
             ),
           ),
