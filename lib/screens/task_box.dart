@@ -22,7 +22,7 @@ class TaskBoxWidget extends StatelessWidget {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(8),
@@ -31,6 +31,8 @@ class TaskBoxWidget extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 10),
+
                       // Task Title
                       Text(
                         task.title,
