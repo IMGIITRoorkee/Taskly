@@ -1,5 +1,5 @@
 enum TimerTypes {
-  work(25, 1, 60), //TODO change to 15
+  work(25, 15, 60),
   breakSmall(5, 2, 5),
   breakLarge(15, 10, 30);
 
