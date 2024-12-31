@@ -45,6 +45,7 @@ dependencies:
   flutter_svg: ^2.0.16
   speech_to_text: ^7.0.0
   flutter_colorpicker: ^1.1.0
+  duration_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
