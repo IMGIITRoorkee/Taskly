@@ -66,10 +66,11 @@ class TaskBoxWidget extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        onPressed: onStart,
-                      ),
+                      if (!task.isCompleted)
+                        IconButton(
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          onPressed: onStart,
+                        ),
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: onEdit,
