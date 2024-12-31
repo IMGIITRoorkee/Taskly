@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,11 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
     _duration = Duration(minutes: _currentTimerType.defaultMinutes);
   }
 
-  void _onCountdownComplete() {
+  void _onCountdownComplete() async {
+    AudioPlayer audioPlayer = AudioPlayer();
+    await audioPlayer.setSourceAsset("sounds/chime.wav");
+    audioPlayer.resume();
+
     if (_currentTimerType == TimerTypes.work) {
       if (_workIndex == numOfTasksForLongBreak) {
         _currentTimerType = TimerTypes.breakLarge;
