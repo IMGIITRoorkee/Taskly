@@ -9,6 +9,8 @@ import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/utils/screen_utils.dart';
 import 'package:taskly/widgets/spacing.dart';
 
+import 'package:taskly/constants.dart';
+
 class TaskPomodoroScreen extends StatefulWidget {
   final Task task;
   const TaskPomodoroScreen({
@@ -80,8 +82,8 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
   Widget build(BuildContext context) {
     final timerSize = ScreenUtils.getPercentOfWidth(context, 0.6);
     final helperText = _currentTimerType == TimerTypes.work
-        ? "Stay focused for ${_duration.inMinutes} minutes"
-        : "Relax for ${_duration.inMinutes} minutes";
+        ? stayFocused(_duration.inMinutes)
+        : relax(_duration.inMinutes);
     IconData actionIcon;
     if (_isStarted) {
       actionIcon = _controller.isPaused.value
