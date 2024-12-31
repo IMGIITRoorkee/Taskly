@@ -6,6 +6,7 @@ import 'package:taskly/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/kudos_details.dart';
+import 'package:taskly/screens/task_pomodoro.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
@@ -153,6 +154,21 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _onStartTask(int index) async {
+    // close the task details dialog
+    Navigator.pop(context);
+
+    bool? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskPomodoroScreen(task: tasks[index]),
+      ),
+    );
+    if (result != null && result) {
+      _toggleTaskCompletion(index, true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   tasks: tasks,
                   onToggle: _toggleTaskCompletion,
                   onEdit: _editTask,
+                  onStart: _onStartTask,
                 ),
         ],
       ),

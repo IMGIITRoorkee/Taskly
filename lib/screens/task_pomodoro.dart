@@ -1,6 +1,7 @@
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_confetti/flutter_confetti.dart';
 import 'package:taskly/enums/timer_types.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/utils/date_utils.dart';
@@ -56,6 +57,20 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
     setState(() {});
   }
 
+  void _onMarkAsComplete() {
+    Confetti.launch(
+      context,
+      options: const ConfettiOptions(
+        particleCount: 100,
+        spread: 70,
+        y: 1,
+      ),
+      onFinished: (overlayEntry) {
+        Navigator.pop(context, true);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final timerSize = ScreenUtils.getPercentOfWidth(context, 0.6);
@@ -79,7 +94,7 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: _onMarkAsComplete,
             child: const Text("Mark as Complete"),
           ),
         )

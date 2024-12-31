@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
-import 'package:taskly/screens/task_pomodoro.dart';
 import 'package:taskly/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 
@@ -10,12 +9,14 @@ class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
   final Function(int) onEdit;
+  final Function(int) onStart;
 
   const TaskListScreen({
     super.key,
     required this.tasks,
     required this.onToggle,
     required this.onEdit,
+    required this.onStart,
   });
 
   @override
@@ -61,12 +62,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     builder: (context) => TaskBoxWidget(
                       task: task,
                       onEdit: () => widget.onEdit(index),
-                      onStart: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TaskPomodoroScreen(task: task),
-                        ),
-                      ),
+                      onStart: () => widget.onStart(index),
                       onDelete: () async {
                         setState(() {
                           deletedTask = widget.tasks[index];
