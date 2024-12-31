@@ -1,2 +1,2 @@
 // Enum to represent options in the menu
-enum TaskOption { deleteAll,exportToCSV }
+enum TaskOption { deleteAll,showKudos,exportToCSV  }

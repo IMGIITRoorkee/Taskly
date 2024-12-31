@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/kudos_storage.dart';
+import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
+import 'package:taskly/screens/kudos_details.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
@@ -22,6 +26,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
+  Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
 
   @override
@@ -29,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetch();
     _loadTasks();
+    _loadKudos();
   }
 
   void _fetch() async {
@@ -64,7 +70,50 @@ class _HomeScreenState extends State<HomeScreen> {
   void _toggleTaskCompletion(int index, bool? value) async {
     setState(() {
       tasks[index].isCompleted = value ?? false;
+
+      if (tasks[index].isCompleted) {
+        if (tasks[index].hasDeadline) {
+          var days_diff =
+              tasks[index].deadline.difference(DateTime.now()).inDays + 1;
+          if (days_diff == 0) {
+            days_diff = 1;
+          }
+          kudos.score += days_diff;
+          String status = (days_diff > 0)
+              ? completedBeforeDeadline(days_diff)
+              : (days_diff == 0)
+                  ? completedOnTime
+                  : completedAfterDeadline(days_diff.abs());
+
+          String title = "'${tasks[index].title}': $status";
+          kudos.history.add([title, days_diff.toString()]);
+        } else {
+          kudos.score += 1;
+          kudos.history
+              .add([completeTaskWithNoDeadline(tasks[index].title), "1"]);
+        }
+      } else {
+        if (tasks[index].hasDeadline) {
+          for (int i = 0; i < kudos.history.length; i++) {
+            if (kudos.history[i][0].startsWith("'${tasks[index].title}':")) {
+              print(kudos.history[i]);
+              int previousScore = int.parse(kudos.history[i][1]);
+              kudos.score -= previousScore;
+              kudos.history.add([
+                scoreReducedForTask(tasks[index].title),
+                (-previousScore).toString()
+              ]);
+              break;
+            }
+          }
+        } else {
+          kudos.score -= 1;
+          kudos.history.add([scoreReducedForTask(tasks[index].title), "-1"]);
+        }
+      }
     });
+
+    await KudosStorage.saveKudos(kudos);
     await TaskStorage.saveTasks(tasks);
   }
 
@@ -74,6 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
       if (option == TaskOption.deleteAll) {
         tasks = [];
         TaskStorage.saveTasks(tasks);
+        KudosStorage.saveKudos(Kudos(score: 0, history: []));
+      } else if (option == TaskOption.showKudos) {
+        showDialog(
+          context: context,
+          builder: (context) => KudosDetails(
+              kudos: kudos, onClose: () => Navigator.of(context).pop()),
+        );
       }
       else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
@@ -130,6 +186,13 @@ void exportToCSV(List<Task> tasks) async {
   print("File saved at: $path");
 }
 
+  void _loadKudos() async {
+    Kudos loadedKudos = await KudosStorage.loadKudos();
+    setState(() {
+      kudos = loadedKudos;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,6 +215,10 @@ void exportToCSV(List<Task> tasks) async {
                   value: TaskOption.exportToCSV,
                   child: Text("Export to CSV file."),
                 ),
+                const PopupMenuItem(
+                  value: TaskOption.showKudos,
+                  child: Text("My Kudos"),
+                )
               ];
             },
           ),
