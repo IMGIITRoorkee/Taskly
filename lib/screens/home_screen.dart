@@ -6,7 +6,7 @@ import 'package:taskly/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/kudos_details.dart';
-import 'package:taskly/screens/task_pomodoro.dart';
+import 'package:taskly/screens/task_pomodoro_screen.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
