@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
+import 'package:taskly/constants.dart';
 import 'package:taskly/utils/date_utils.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -15,14 +16,20 @@ class TaskFormScreen extends StatefulWidget {
 
 class _TaskFormScreenState extends State<TaskFormScreen> {
   final _key = GlobalKey<FormState>();
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  final FocusNode _focusNode = FocusNode();
+  
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late bool editing;
   var hasDeadline = false;
   DateTime? deadline;
   Color selectedColor = Colors.blue;
-
   bool isTitleListening = false;
+
+
+  List<String> _filteredSuggestions = [];
 
   @override
   void initState() {
@@ -33,6 +40,97 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     hasDeadline = widget.task?.hasDeadline ?? false;
     deadline = widget.task?.deadline;
     selectedColor = widget.task?.color ?? Colors.blue;
+    _titleController.addListener(_onTitleChanged);
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        _removeOverlay();
+      }
+    });
+  }
+
+    @override
+  void dispose() {
+    _titleController.removeListener(_onTitleChanged);
+    _titleController.dispose();
+    _descController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+ void _onTitleChanged() {
+  final input = _titleController.text.toLowerCase();
+  final newSuggestions = suggestions
+      .where((suggestion) => suggestion.toLowerCase().startsWith(input))
+      .toList();
+
+  if (newSuggestions.isEmpty) {
+    _removeOverlay();
+  } else {
+    setState(() {
+      _filteredSuggestions = newSuggestions;
+    });
+    _updateOverlay(); // Update overlay dynamically
+  }
+}
+
+void _updateOverlay() {
+  if (_overlayEntry != null) {
+    _overlayEntry!.remove();
+  }
+  _createOverlay();
+  Overlay.of(context).insert(_overlayEntry!); // Reinserts updated overlay
+}
+
+void _createOverlay() {
+  _overlayEntry = OverlayEntry(
+    builder: (context) => Positioned(
+      width: _layerLink.leaderSize?.width ?? 300,
+      child: CompositedTransformFollower(
+        link: _layerLink,
+        showWhenUnlinked: false,
+        offset: const Offset(0, 50),
+        child: Material(
+          elevation: 4,
+          child: Container(
+            constraints: const BoxConstraints(
+              maxHeight: 150, // Constrains the height
+            ),
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              itemCount: _filteredSuggestions.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  dense: true,
+                  title: Text(_filteredSuggestions[index]),
+                  onTap: () => _selectSuggestion(_filteredSuggestions[index]),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+  void _showOverlay() {
+    if (_overlayEntry == null) {
+      _createOverlay();
+      Overlay.of(context).insert(_overlayEntry!);
+    }
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _selectSuggestion(String suggestion) {
+    setState(() {
+      _titleController.text = suggestion;
+      _removeOverlay();
+    });
   }
 
   void _showColorPicker() {
@@ -105,26 +203,29 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               children: [
-                TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Task Title',
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        isTitleListening = true;
-                        _toggleMic(_titleController);
-                      },
-                      icon: Icon(SpeechService.isListening() & isTitleListening
-                          ? Icons.circle_rounded
-                          : Icons.mic_rounded),
+                CompositedTransformTarget(
+                  link: _layerLink,
+                  child: TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Task Title',
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          isTitleListening = true;
+                          _toggleMic(_titleController);
+                        },
+                        icon: Icon(SpeechService.isListening() & isTitleListening
+                            ? Icons.circle_rounded
+                            : Icons.mic_rounded),
+                      ),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Title cannot be empty!";
+                      }
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Title cannot be empty!";
-                    }
-                    return null;
-                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 15.0),
