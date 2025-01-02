@@ -5,12 +5,13 @@ import 'package:taskly/utils/date_utils.dart';
 class MeditationHistoryStorage {
   static const String _meditHistKey = 'MeditationHistory';
 
-  static Future<void> addToHistory(int timeDiff) async {
+  static Future<void> addToHistory(int plannedTime,int timeDiff) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       List<Map<String, dynamic>> history = await _getHistoryList(prefs);
       final newEntry = {
-        "value": timeDiff.toString(),
+        "time": plannedTime.toString(),
+        "diff": timeDiff.toString(),
         "date": MyDateUtils.getFormattedDate(DateTime.now()),
       };
       history.add(newEntry);
@@ -52,4 +53,7 @@ class MeditationHistoryStorage {
     final String encodedHistory = jsonEncode(history);
     await prefs.setString(_meditHistKey, encodedHistory);
   }
+
+    /// Clears all meditation history
+
 } 

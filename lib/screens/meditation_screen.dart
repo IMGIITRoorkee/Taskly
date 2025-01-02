@@ -87,7 +87,7 @@ class _MeditationScreenState extends State<MeditationScreen>
             MeditationComplete(minutesMeditated, secondsMeditated);
       }
 
-      MeditationHistoryStorage.addToHistory(timeDiff);
+      MeditationHistoryStorage.addToHistory(selectedMinutes,timeDiff);
 
       // Show completion message
       ScaffoldMessenger.of(context).showSnackBar(
