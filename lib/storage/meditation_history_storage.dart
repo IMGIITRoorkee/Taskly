@@ -54,6 +54,4 @@ class MeditationHistoryStorage {
     await prefs.setString(_meditHistKey, encodedHistory);
   }
 
-    /// Clears all meditation history
-
 } 

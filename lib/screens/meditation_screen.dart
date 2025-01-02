@@ -19,6 +19,7 @@ class _MeditationScreenState extends State<MeditationScreen>
   int remainingSeconds = 0;
   int extraSeconds = 0;
   bool isRunning = false;
+  bool playaudio = true;
   Timer? timer;
   final audioPlayer = AudioPlayer();
   bool isAudioPlaying = false;
@@ -50,9 +51,11 @@ class _MeditationScreenState extends State<MeditationScreen>
       remainingSeconds = selectedMinutes * 60;
       extraSeconds = 0;
     });
-
-    audioPlayer.resume();
+    if (playaudio){
+ audioPlayer.resume();
     isAudioPlaying = true;
+    }
+   
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -122,8 +125,12 @@ class _MeditationScreenState extends State<MeditationScreen>
 
       isRunning = false;
       timer?.cancel();
+      if (isAudioPlaying){
       audioPlayer.pause();
       isAudioPlaying = false;
+      }
+      remainingSeconds = 0;
+  extraSeconds = 0;
     });
   }
 
@@ -171,7 +178,7 @@ class _MeditationScreenState extends State<MeditationScreen>
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     title: const Text(
-                      'Mindful Moments',
+                      'Meditation session',
                       style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w300,
@@ -199,7 +206,7 @@ class _MeditationScreenState extends State<MeditationScreen>
                       children: [
                         if (!isRunning) ...[
                           const Text(
-                            'Set Your Duration',
+                            'Mindful Moments with Taskly',
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.white70,
@@ -244,6 +251,28 @@ class _MeditationScreenState extends State<MeditationScreen>
                                     },
                                   ),
                                 ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Play Audio',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Switch(
+                                  value: playaudio,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      playaudio = value;
+                                    });
+                                  },
+                                ),
+                                  ],
+                                )
+                                
                               ],
                             ),
                           ),
