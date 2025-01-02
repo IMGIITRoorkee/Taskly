@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
-import 'package:taskly/task_storage.dart';
+import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 
 class TaskListScreen extends StatefulWidget {

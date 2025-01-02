@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
-import 'package:taskly/kudos_storage.dart';
+import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/kudos_details.dart';
+import 'package:taskly/screens/meditation_screen.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
-import 'package:taskly/task_storage.dart';
+import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
@@ -127,6 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => KudosDetails(
               kudos: kudos, onClose: () => Navigator.of(context).pop()),
         );
+      }else if (option == TaskOption.launchMeditationScreen) {
+        Navigator.push(context,MaterialPageRoute(builder: (context) => const MeditationScreen()));
       }
     });
   }
@@ -174,7 +177,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const PopupMenuItem(
                   value: TaskOption.showKudos,
                   child: Text("My Kudos"),
-                )
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.launchMeditationScreen,
+                  child: Text("Meditate"),
+                ),
               ];
             },
           ),

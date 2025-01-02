@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taskly/themeData_storage.dart';
+import 'package:taskly/storage/themeData_storage.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool _dark = false; // Default to false
