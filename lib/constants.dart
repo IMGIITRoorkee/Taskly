@@ -9,3 +9,9 @@ scoreReducedForTask(String task) => "Score reduced for $task";
 
 String stayFocused(int min) => "Stay focused for $min minutes";
 String relax(int min) => "Relax for $min minutes";
+
+//Meditation Completion
+String ExtraMeditation(int selectedMinutes, int extraSeconds) =>
+    "Great job! You meditated for $selectedMinutes minutes and $extraSeconds extra seconds";
+String MeditationComplete(int minutesMeditated, int secondsMeditated) =>
+    "Session ended. You meditated for $minutesMeditated minutes and $secondsMeditated seconds";
