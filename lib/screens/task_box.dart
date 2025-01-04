@@ -8,6 +8,7 @@ class TaskBoxWidget extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onClose;
+  final VoidCallback onStart;
 
   const TaskBoxWidget({
     super.key,
@@ -15,6 +16,7 @@ class TaskBoxWidget extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onClose,
+    required this.onStart,
   });
 
   @override
@@ -80,6 +82,11 @@ class TaskBoxWidget extends StatelessWidget {
                             width: 24,
                             height: 24,
                           ),
+                          ),
+                      if (!task.isCompleted)
+                        IconButton(
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          onPressed: onStart,
                         ),
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
