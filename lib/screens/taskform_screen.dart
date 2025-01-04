@@ -5,6 +5,8 @@ import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
+import 'package:taskly/widgets/spacing.dart';
+import 'package:taskly/widgets/tags_card.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -153,6 +155,19 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     ];
   }
 
+  Widget _buildCard(
+      String title, String subtitle, Widget trailing, VoidCallback onTap) {
+    return Card(
+      margin: const EdgeInsets.all(0),
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: trailing,
+        onTap: onTap,
+      ),
+    );
+  }
+
   List<Widget> _buildColorDeadlineRepeat() {
     Widget deadlineTrailing;
     if (deadline != null) {
@@ -169,70 +184,73 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
 
     return [
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Colour"),
-          subtitle: const Text("Select a colour for your task"),
-          trailing: Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: selectedColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
+      _buildCard(
+        "Colour",
+        "Select a colour for your task",
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: selectedColor,
+            borderRadius: BorderRadius.circular(4),
           ),
-          onTap: _showColorPicker,
         ),
+        _showColorPicker,
       ),
-      const SizedBox(height: 16),
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Deadline"),
-          subtitle: const Text("Select a deadline for your task"),
-          trailing: deadlineTrailing,
-          onTap: () async {
-            final selectedDate = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime.now(),
-              lastDate: DateTime(2025),
-            );
-            if (selectedDate != null) {
-              setState(() {
-                hasDeadline = true;
-                deadline = selectedDate;
-              });
-            }
-          },
-        ),
-      ),
-      const SizedBox(height: 16),
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Repeat"),
-          subtitle: const Text("Select repeat interval for your task"),
-          trailing: repeatTrailing,
-          onTap: () async {
-            int? days = await showDialog(
-              context: context,
-              builder: (context) {
-                return RepeatSelectCard(repeatInterval: repeatInterval);
-              },
-            );
-            if (days != null) {
-              if (!hasDeadline) {
-                hasDeadline = true;
-                deadline = DateTime.now();
-              }
-            }
+      const Spacing(),
+      _buildCard(
+        "Deadline",
+        "Select a deadline for your task",
+        deadlineTrailing,
+        () async {
+          final selectedDate = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2025),
+          );
+          if (selectedDate != null) {
             setState(() {
-              repeatInterval = days;
+              hasDeadline = true;
+              deadline = selectedDate;
             });
-          },
-        ),
+          }
+        },
+      ),
+      const Spacing(),
+      _buildCard(
+        "Repeat",
+        "Select repeat interval for your task",
+        repeatTrailing,
+        () async {
+          int? days = await showDialog(
+            context: context,
+            builder: (context) {
+              return RepeatSelectCard(repeatInterval: repeatInterval);
+            },
+          );
+          if (days != null) {
+            if (!hasDeadline) {
+              hasDeadline = true;
+              deadline = DateTime.now();
+            }
+          }
+          setState(() {
+            repeatInterval = days;
+          });
+        },
+      ),
+      const Spacing(),
+      _buildCard(
+        "Tags",
+        "Select tags for your task",
+        const Icon(Icons.label_outline_rounded),
+        () {
+          showDialog(
+            context: context,
+            builder: (context) => const TagsCard(),
+          );
+        },
       ),
     ];
   }
