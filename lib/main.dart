@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:taskly/providers/theme_provider.dart';
 import 'package:taskly/screens/home_screen.dart';
 import 'package:taskly/screens/intro_screen.dart';
+import 'package:taskly/screens/splash_screen.dart';
 import 'package:taskly/service/local_db_service.dart';
 import 'package:taskly/service/speech_service.dart';
 
@@ -28,11 +29,12 @@ class TasklyApp extends StatefulWidget {
 class _TasklyAppState extends State<TasklyApp> {
   late ThemeProvider themeProvider;
 
+
   @override
   void initState() {
     super.initState();
     themeProvider =
-        ThemeProvider(dark: Theme.of(context).brightness == Brightness.dark);
+        ThemeProvider();
     SpeechService.intialize();
   }
 
@@ -50,7 +52,13 @@ class _TasklyAppState extends State<TasklyApp> {
           ),
           darkTheme: ThemeData.dark(),
           themeMode: value.darkTheme ? ThemeMode.dark : ThemeMode.light,
-          home: widget.isFirstTime ? const IntroScreen() : const HomeScreen(),
+          // home: widget.isFirstTime ? const IntroScreen() : const HomeScreen(),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => SplashScreen(), // Add Splash Screen as the initial route
+            '/main': (context) =>
+                widget.isFirstTime ? const IntroScreen() : const HomeScreen(),
+          },
         ),
       ),
     );

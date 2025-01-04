@@ -44,7 +44,14 @@ dependencies:
   introduction_screen: ^3.1.14
   flutter_svg: ^2.0.16
   speech_to_text: ^7.0.0
+  csv: ^6.0.0
+  file_picker: ^8.1.6
   flutter_colorpicker: ^1.1.0
+  audioplayers: ^6.1.0
+  duration_picker: ^1.2.0
+  circular_countdown_timer: ^0.2.4
+  flutter_confetti: ^0.3.4
+
 
 dev_dependencies:
   flutter_test:
