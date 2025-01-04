@@ -20,4 +20,9 @@ class TagsStorage {
     }
     return [];
   }
+
+  static Future<List<Tag>> getTagsFromIds(List<String> ids) async {
+    List<Tag> tags = await loadTags();
+    return tags.where((element) => ids.contains(element.id)).toList();
+  }
 }
