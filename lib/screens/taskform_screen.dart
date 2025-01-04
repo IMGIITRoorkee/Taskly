@@ -261,6 +261,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         () async {
           List<Tag>? allTags = await showDialog(
             context: context,
+            useRootNavigator: true,
             builder: (context) => TagsCard(tags: tags),
           );
 

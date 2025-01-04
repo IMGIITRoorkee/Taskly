@@ -1,7 +1,9 @@
 import 'package:choice/choice.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:taskly/models/tag.dart';
+import 'package:taskly/providers/tags_provider.dart';
 import 'package:taskly/storage/tags_storage.dart';
 import 'package:taskly/widgets/spacing.dart';
 
@@ -26,8 +28,8 @@ class _TagsCardState extends State<TagsCard> {
     _fetchTags();
   }
 
-  void _fetchTags() async {
-    allTags = await TagsStorage.loadTags();
+  void _fetchTags() {
+    allTags = Provider.of<TagsProvider>(context, listen: false).allTags;
     currentShowing = allTags;
 
     if (widget.tagIds.isNotEmpty) {
@@ -62,7 +64,10 @@ class _TagsCardState extends State<TagsCard> {
 
     Tag tag = Tag(title: controller.text);
     await TagsStorage.saveTags(allTags..add(tag));
-    if (mounted) Navigator.pop(context, selected..add(tag));
+    if (mounted) {
+      Provider.of<TagsProvider>(context, listen: false).updateTags(allTags);
+      Navigator.pop(context, selected..add(tag));
+    }
   }
 
   @override

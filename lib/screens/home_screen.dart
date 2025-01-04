@@ -135,11 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
-      }
-      else if (option == TaskOption.exportToCSV) {
+      } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
-
     });
   }
 
@@ -157,39 +155,47 @@ class _HomeScreenState extends State<HomeScreen> {
       await TaskStorage.saveTasks(tasks);
     }
   }
-void exportToCSV(List<Task> tasks) async {
-  // Prepare CSV data
-  List<List<dynamic>> rows = [];
 
-  // Add header
-  rows.add(["Title", "Description", "Is Completed","Has Deadline","Deadline"]);
+  void exportToCSV(List<Task> tasks) async {
+    // Prepare CSV data
+    List<List<dynamic>> rows = [];
 
-  // Add data rows
-  for (var task in tasks) {
-    rows.add([task.title, task.description, task.isCompleted,task.hasDeadline,'${task.deadline.day}/${task.deadline.month}/${task.deadline.year}']);
+    // Add header
+    rows.add(
+        ["Title", "Description", "Is Completed", "Has Deadline", "Deadline"]);
+
+    // Add data rows
+    for (var task in tasks) {
+      rows.add([
+        task.title,
+        task.description,
+        task.isCompleted,
+        task.hasDeadline,
+        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+      ]);
+    }
+
+    // Convert to CSV string
+    String csv = const ListToCsvConverter().convert(rows);
+
+    // Open directory picker
+    String? directory = await FilePicker.platform.getDirectoryPath();
+
+    if (directory == null) {
+      // User canceled the picker
+      print("Export canceled.");
+      return;
+    }
+
+    // Create the file path
+    final path = "$directory/tasks.csv";
+
+    // Write the CSV file
+    final file = File(path);
+    await file.writeAsString(csv);
+
+    print("File saved at: $path");
   }
-
-  // Convert to CSV string
-  String csv = const ListToCsvConverter().convert(rows);
-
-  // Open directory picker
-  String? directory = await FilePicker.platform.getDirectoryPath();
-
-  if (directory == null) {
-    // User canceled the picker
-    print("Export canceled.");
-    return;
-  }
-
-  // Create the file path
-  final path = "$directory/tasks.csv";
-
-  // Write the CSV file
-  final file = File(path);
-  await file.writeAsString(csv);
-
-  print("File saved at: $path");
-}
 
   void _loadKudos() async {
     Kudos loadedKudos = await KudosStorage.loadKudos();
