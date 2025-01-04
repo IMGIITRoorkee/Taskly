@@ -259,7 +259,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         "Select tags for your task",
         tagsTrailing,
         () async {
-          List<Tag>? allTags = await showDialog(
+          List<Tag>? allTags = await showModalBottomSheet(
             context: context,
             useRootNavigator: true,
             builder: (context) => TagsCard(tags: tags),
