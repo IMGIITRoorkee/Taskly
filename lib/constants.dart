@@ -7,7 +7,7 @@ scoreReducedForTask(String task) => "Score reduced for $task";
 
 
 //suggestions
-final List<String> tasks = [
+final List<String> suggestions = [
   'Grocery shopping',
   'Laundry',
   'Dishwashing',
