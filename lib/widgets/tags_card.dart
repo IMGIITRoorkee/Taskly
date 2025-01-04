@@ -80,7 +80,7 @@ class _TagsCardState extends State<TagsCard> {
       ],
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
+        child: ListView(
           children: [
             SearchBar(
               controller: controller,
