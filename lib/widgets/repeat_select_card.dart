@@ -66,6 +66,7 @@ class _RepeatSelectCardState extends State<RepeatSelectCard> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16),
               child: TextField(
+                enabled: selected == null,
                 controller: controller,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -78,11 +79,18 @@ class _RepeatSelectCardState extends State<RepeatSelectCard> {
               onPressed: () {
                 if (selected != null) {
                   Navigator.pop(context, selected!.days);
-                } else if (controller.text.isNotEmpty &&
-                    int.tryParse(controller.text) != null) {
-                  Navigator.pop(context, int.tryParse(controller.text));
                 } else {
-                  Fluttertoast.showToast(msg: "Select a repeat interval!");
+                  int? custom = int.tryParse(controller.text);
+                  if (controller.text.isEmpty || custom == null) {
+                    Fluttertoast.showToast(msg: "Select a repeat interval!");
+                  } else {
+                    if (custom <= 0) {
+                      Fluttertoast.showToast(
+                          msg: "Repeat interval must be greater than 0 days!");
+                    } else {
+                      Navigator.pop(context, custom);
+                    }
+                  }
                 }
               },
               child: const Text("Submit"),
