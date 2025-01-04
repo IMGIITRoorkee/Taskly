@@ -114,12 +114,7 @@ void _createOverlay() {
   );
 }
 
-  void _showOverlay() {
-    if (_overlayEntry == null) {
-      _createOverlay();
-      Overlay.of(context).insert(_overlayEntry!);
-    }
-  }
+
 
   void _removeOverlay() {
     _overlayEntry?.remove();
