@@ -53,9 +53,7 @@ class Tag {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Tag && other.title == title;
+    return other is Tag && other.id == id;
   }
 
   @override

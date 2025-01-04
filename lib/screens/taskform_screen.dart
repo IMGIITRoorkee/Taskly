@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:taskly/models/tag.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/utils/date_utils.dart';
@@ -25,6 +26,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   DateTime? deadline;
   Color selectedColor = Colors.blue;
   int? repeatInterval;
+  late List<String> tags;
 
   bool isTitleListening = false;
 
@@ -39,6 +41,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     selectedColor = widget.task?.color ?? Colors.blue;
     repeatInterval =
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
+    tags = widget.task?.tags ?? [];
   }
 
   void _showColorPicker() {
@@ -183,6 +186,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       repeatTrailing = const Icon(Icons.repeat_rounded);
     }
 
+    Widget tagsTrailing;
+    if (tags.isEmpty) {
+      tagsTrailing = const Icon(Icons.label_outline_rounded);
+    } else {
+      tagsTrailing = Text(
+        tags.length.toString(),
+        style: Theme.of(context).textTheme.bodyLarge,
+      );
+    }
+
     return [
       _buildCard(
         "Colour",
@@ -244,12 +257,18 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _buildCard(
         "Tags",
         "Select tags for your task",
-        const Icon(Icons.label_outline_rounded),
-        () {
-          showDialog(
+        tagsTrailing,
+        () async {
+          List<Tag>? allTags = await showDialog(
             context: context,
-            builder: (context) => const TagsCard(),
+            builder: (context) => TagsCard(tags: tags),
           );
+
+          if (allTags != null) {
+            setState(() {
+              tags = allTags.map((e) => e.id).toList();
+            });
+          }
         },
       ),
     ];
@@ -266,6 +285,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
+            tags: tags,
           );
           Fluttertoast.showToast(
               msg: editing
