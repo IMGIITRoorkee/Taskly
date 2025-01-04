@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
@@ -139,6 +140,14 @@ class _HomeScreenState extends State<HomeScreen> {
       else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
+      else if (option == TaskOption.loadFromCSV) {
+        importFromCSV(tasks).then((newTasks) {
+          setState(() {
+            tasks = newTasks;
+          });
+          TaskStorage.saveTasks(tasks);
+        });
+      }
 
     });
   }
@@ -191,6 +200,64 @@ void exportToCSV(List<Task> tasks) async {
   print("File saved at: $path");
 }
 
+Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
+  try {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    if (result == null) {
+      print("Import canceled.");
+      return existingTasks;
+    }
+    final file = File(result.files.single.path!);
+    final content = await file.readAsString();
+    List<List<dynamic>> rows = const CsvToListConverter().convert(content);
+    if (rows.isEmpty) {
+      Fluttertoast.showToast(msg: "CSV file is empty");
+      return existingTasks;
+    }
+    List<String> expectedHeader = ["Title", "Description", "Is Completed", "Has Deadline", "Deadline"];
+    List<String> actualHeader = rows[0].map((e) => e.toString()).toList();
+    if (!listEquals(expectedHeader, actualHeader)) {
+      Fluttertoast.showToast(msg: "Invalid CSV format. Please use the correct template");
+      return existingTasks;
+    }
+    List<Task> importedTasks = [];
+    for (int i = 1; i < rows.length; i++) {
+      try {
+        var row = rows[i];   
+        DateTime? deadline;
+        if (row[4].toString().isNotEmpty) {
+          List<String> dateParts = row[4].toString().split('/');
+          deadline = DateTime(
+            int.parse(dateParts[2]), 
+            int.parse(dateParts[1]), 
+            int.parse(dateParts[0]), 
+          );
+        }
+        Task task = Task(
+          title: row[0].toString(),
+          description: row[1].toString(),
+          isCompleted: row[2].toString().toLowerCase() == 'true',
+          hasDeadline: row[3].toString().toLowerCase() == 'true',
+          deadline: deadline ?? DateTime.now(),
+        );
+        importedTasks.add(task);
+      } catch (e) {
+        print("Error parsing row $i: $e");
+        Fluttertoast.showToast(msg: "Error parsing some tasks. Some entries might be skipped.");
+      }
+    }
+    existingTasks.addAll(importedTasks);
+    Fluttertoast.showToast(msg: "Successfully imported ${importedTasks.length} tasks");
+    return existingTasks;
+  } catch (e) {
+    print("Import error: $e");
+    Fluttertoast.showToast(msg: "Error importing CSV file");
+    return existingTasks;
+  }
+}
   void _loadKudos() async {
     Kudos loadedKudos = await KudosStorage.loadKudos();
     setState(() {
@@ -242,6 +309,10 @@ void exportToCSV(List<Task> tasks) async {
                 const PopupMenuItem(
                   value: TaskOption.launchMeditationScreen,
                   child: Text("Meditate"),
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.loadFromCSV,
+                  child: Text("Load Tasks from csv file."),
                 ),
               ];
             },
