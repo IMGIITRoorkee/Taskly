@@ -219,7 +219,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             int? days = await showDialog(
               context: context,
               builder: (context) {
-                return const RepeatSelectCard();
+                return RepeatSelectCard(repeatInterval: repeatInterval);
               },
             );
             if (days != null) {
@@ -227,10 +227,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 hasDeadline = true;
                 deadline = DateTime.now();
               }
-              setState(() {
-                repeatInterval = days;
-              });
             }
+            setState(() {
+              repeatInterval = days;
+            });
           },
         ),
       ),

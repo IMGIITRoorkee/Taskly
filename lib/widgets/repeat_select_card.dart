@@ -4,7 +4,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/enums/repeat_interval.dart';
 
 class RepeatSelectCard extends StatefulWidget {
-  const RepeatSelectCard({super.key});
+  final int? repeatInterval;
+  const RepeatSelectCard({super.key, this.repeatInterval});
 
   @override
   State<RepeatSelectCard> createState() => _RepeatSelectCardState();
@@ -19,6 +20,21 @@ class _RepeatSelectCardState extends State<RepeatSelectCard> {
 
   RepeatInterval? selected;
   final TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.repeatInterval != null) {
+      for (var element in repeatIntervals) {
+        if (element.days == widget.repeatInterval) {
+          setSelectedValue(element);
+          return;
+        }
+      }
+
+      controller.text = "${widget.repeatInterval}";
+    }
+  }
 
   void setSelectedValue(RepeatInterval? value) {
     setState(() => selected = value);
@@ -75,25 +91,36 @@ class _RepeatSelectCardState extends State<RepeatSelectCard> {
               ),
             ),
             const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                if (selected != null) {
-                  Navigator.pop(context, selected!.days);
-                } else {
-                  int? custom = int.tryParse(controller.text);
-                  if (controller.text.isEmpty || custom == null) {
-                    Fluttertoast.showToast(msg: "Select a repeat interval!");
-                  } else {
-                    if (custom <= 0) {
-                      Fluttertoast.showToast(
-                          msg: "Repeat interval must be greater than 0 days!");
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Reset"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (selected != null) {
+                      Navigator.pop(context, selected!.days);
                     } else {
-                      Navigator.pop(context, custom);
+                      int? custom = int.tryParse(controller.text);
+                      if (controller.text.isEmpty || custom == null) {
+                        Fluttertoast.showToast(
+                            msg: "Select a repeat interval!");
+                      } else {
+                        if (custom <= 0) {
+                          Fluttertoast.showToast(
+                              msg:
+                                  "Repeat interval must be greater than 0 days!");
+                        } else {
+                          Navigator.pop(context, custom);
+                        }
+                      }
                     }
-                  }
-                }
-              },
-              child: const Text("Submit"),
+                  },
+                  child: const Text("Submit"),
+                ),
+              ],
             )
           ],
         ),
