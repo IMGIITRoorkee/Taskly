@@ -7,7 +7,9 @@ import 'package:taskly/screens/Meditation_history_box.dart';
 import 'package:taskly/storage/meditation_history_storage.dart';
 
 class MeditationScreen extends StatefulWidget {
-  const MeditationScreen({super.key});
+  final Function kudosForMeditation;
+
+  const MeditationScreen({super.key, required this.kudosForMeditation});
 
   @override
   State<MeditationScreen> createState() => _MeditationScreenState();
@@ -74,12 +76,15 @@ class _MeditationScreenState extends State<MeditationScreen>
       int totalMeditationTime;
       String message;
 
+
       if (remainingSeconds == 0) {
         // Session went over time
         timeDiff = extraSeconds;
         totalMeditationTime = selectedMinutes * 60 + extraSeconds;
         message =
             ExtraMeditation(selectedMinutes,extraSeconds);
+         if (extraSeconds ~/ 300 > 0) widget.kudosForMeditation(extraSeconds ~/ 300,MeditationCompleteKudosExtra(extraSeconds ~/ 60));
+
       } else {
         // Session ended early
         timeDiff = -remainingSeconds;
@@ -88,7 +93,11 @@ class _MeditationScreenState extends State<MeditationScreen>
         int secondsMeditated = totalMeditationTime % 60;
         message =
             MeditationComplete(minutesMeditated, secondsMeditated);
+         if (timeDiff ~/ 300 > 0) widget.kudosForMeditation(timeDiff ~/ 300,MeditationCompleteKudosLess(timeDiff ~/ 60));
       }
+        if (totalMeditationTime >= 300) {
+          widget.kudosForMeditation(1,MeditationCompleteKudos(totalMeditationTime ~/ 60));
+        }
 
       MeditationHistoryStorage.addToHistory(selectedMinutes,timeDiff);
 

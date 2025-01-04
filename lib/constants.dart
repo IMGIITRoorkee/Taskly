@@ -15,3 +15,6 @@ String ExtraMeditation(int selectedMinutes, int extraSeconds) =>
     "Great job! You meditated for $selectedMinutes minutes and $extraSeconds extra seconds";
 String MeditationComplete(int minutesMeditated, int secondsMeditated) =>
     "Session ended. You meditated for $minutesMeditated minutes and $secondsMeditated seconds";
+String MeditationCompleteKudos (int minute) =>"Complete a $minute minute meditation session";
+String MeditationCompleteKudosExtra (int minute) =>"$minute minutes of extra meditation.";
+String MeditationCompleteKudosLess (int minute) =>"$minute minutes of meditation missed.";

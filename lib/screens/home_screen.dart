@@ -119,6 +119,11 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
+void kudosForMeditation(int scoreChange, String mssg) async{
+  kudos.score += scoreChange;
+  kudos.history.add([mssg, scoreChange.toString()]);
+  await KudosStorage.saveKudos(kudos);
+}
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
     setState(() {
@@ -134,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const MeditationScreen()));
+            MaterialPageRoute(builder: (context) => MeditationScreen(kudosForMeditation: kudosForMeditation,)));
       }
       else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
