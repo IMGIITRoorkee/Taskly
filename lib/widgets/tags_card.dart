@@ -45,10 +45,6 @@ class _TagsCardState extends State<TagsCard> {
       });
 
   void onSubmit() {
-    if (selected.isEmpty) {
-      Fluttertoast.showToast(msg: "Select tags to submit.");
-      return;
-    }
     Navigator.pop(context, selected);
   }
 
