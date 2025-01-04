@@ -4,12 +4,18 @@ class Task {
   String title;
   String description;
   bool isCompleted;
-  DateTime deadline;
-  bool hasDeadline;
+  DateTime? deadline;
   Color color;
 
-  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false,this.color = Colors.blue })
-      : deadline = deadline ?? DateTime.now();
+  bool get hasDeadline => deadline != null;
+
+  Task({
+    required this.title,
+    this.description = '',
+    this.isCompleted = false,
+    this.deadline,
+    this.color = Colors.blue,
+  });
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -17,8 +23,7 @@ class Task {
       'title': title,
       'description': description,
       'isCompleted': isCompleted,
-      'deadline': deadline.toIso8601String(),
-      'hasDeadline': hasDeadline,
+      'deadline': deadline?.toIso8601String(),
       'color': color.value,
     };
   }
@@ -30,7 +35,6 @@ class Task {
       description: json['description'],
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
-      hasDeadline: json['hasDeadline'],
       color: Color(json['color']),
     );
   }

@@ -88,7 +88,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     } else {
       _startListening(controller);
     }
-
   }
 
   @override
@@ -211,7 +210,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       Task task = Task(
                         title: _titleController.text,
                         description: _descController.text,
-                        hasDeadline: hasDeadline,
                         deadline: hasDeadline ? deadline : null,
                         color: selectedColor,
                       );

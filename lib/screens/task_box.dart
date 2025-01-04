@@ -37,14 +37,14 @@ class TaskBoxWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-            
+
                   // Task Description
                   Text(
                     task.description,
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 10),
-            
+
                   // Deadline (if applicable)
                   if (task.hasDeadline)
                     Row(
@@ -52,14 +52,14 @@ class TaskBoxWidget extends StatelessWidget {
                         const Icon(Icons.calendar_today, size: 18),
                         const SizedBox(width: 8),
                         Text(
-                          'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}',
+                          'Deadline: ${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
-            
+
                   const SizedBox(height: 20),
-            
+
                   // Edit and Delete Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
