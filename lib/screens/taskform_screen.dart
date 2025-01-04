@@ -246,7 +246,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             description: _descController.text,
             hasDeadline: hasDeadline,
             deadline: hasDeadline ? deadline : null,
-            isRecurring: repeatInterval != null,
             recurringDays: repeatInterval,
             color: selectedColor,
           );
