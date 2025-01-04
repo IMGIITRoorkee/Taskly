@@ -7,6 +7,7 @@ import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/kudos_details.dart';
 import 'package:taskly/screens/meditation_screen.dart';
+import 'package:taskly/screens/task_pomodoro_screen.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
@@ -128,8 +129,9 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => KudosDetails(
               kudos: kudos, onClose: () => Navigator.of(context).pop()),
         );
-      }else if (option == TaskOption.launchMeditationScreen) {
-        Navigator.push(context,MaterialPageRoute(builder: (context) => const MeditationScreen()));
+      } else if (option == TaskOption.launchMeditationScreen) {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const MeditationScreen()));
       }
     });
   }
@@ -154,6 +156,21 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       kudos = loadedKudos;
     });
+  }
+
+  void _onStartTask(int index) async {
+    // close the task details dialog
+    Navigator.pop(context);
+
+    bool? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskPomodoroScreen(task: tasks[index]),
+      ),
+    );
+    if (result != null && result) {
+      _toggleTaskCompletion(index, true);
+    }
   }
 
   @override
@@ -206,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   tasks: tasks,
                   onToggle: _toggleTaskCompletion,
                   onEdit: _editTask,
+                  onStart: _onStartTask,
                 ),
         ],
       ),
