@@ -8,18 +8,21 @@ class Task {
   bool hasDeadline;
   Color color;
   int? recurringDays;
+  List<String> tags; // the tag ids
 
   bool get isRecurring => recurringDays != null;
 
-  Task(
-      {required this.title,
-      this.description = '',
-      this.isCompleted = false,
-      DateTime? deadline,
-      this.hasDeadline = false,
-      this.color = Colors.blue,
-      this.recurringDays})
-      : deadline = deadline ?? DateTime.now();
+  Task({
+    required this.title,
+    this.description = '',
+    this.isCompleted = false,
+    DateTime? deadline,
+    this.hasDeadline = false,
+    this.color = Colors.blue,
+    this.recurringDays,
+    List<String>? tags,
+  })  : deadline = deadline ?? DateTime.now(),
+        tags = tags ?? [];
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -31,6 +34,7 @@ class Task {
       'hasDeadline': hasDeadline,
       'recurringDays': recurringDays,
       'color': color.value,
+      'tags': tags,
     };
   }
 
@@ -44,6 +48,7 @@ class Task {
       hasDeadline: json['hasDeadline'],
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
+      tags: List.from(json['tags']),
     );
   }
 

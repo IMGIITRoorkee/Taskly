@@ -4,20 +4,25 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class Tag {
+  String id;
   String title;
   Color color;
 
   Tag({
-    required this.title,
     Color? color,
-  }) : color = color ??
-            Colors.primaries[Random().nextInt(Colors.primaries.length)];
+    String? id,
+    required this.title,
+  })  : color = color ??
+            Colors.primaries[Random().nextInt(Colors.primaries.length)],
+        id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
   Tag copyWith({
+    String? id,
     String? title,
     Color? color,
   }) {
     return Tag(
+      id: id ?? this.id,
       title: title ?? this.title,
       color: color ?? this.color,
     );
@@ -25,6 +30,7 @@ class Tag {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'title': title,
       'color': color.value,
     };
@@ -32,8 +38,9 @@ class Tag {
 
   factory Tag.fromMap(Map<String, dynamic> map) {
     return Tag(
+      id: map['id'] ?? '',
       title: map['title'] ?? '',
-      color: map['color'] != null ? Color(map['color']) : null,
+      color: Color(map['color']),
     );
   }
 
@@ -42,7 +49,7 @@ class Tag {
   factory Tag.fromJson(String source) => Tag.fromMap(json.decode(source));
 
   @override
-  String toString() => 'Tag(title: $title, color: $color)';
+  String toString() => 'Tag(id: $id, title: $title, color: $color)';
 
   @override
   bool operator ==(Object other) {
@@ -52,5 +59,5 @@ class Tag {
   }
 
   @override
-  int get hashCode => title.hashCode ^ color.hashCode;
+  int get hashCode => id.hashCode ^ title.hashCode ^ color.hashCode;
 }
