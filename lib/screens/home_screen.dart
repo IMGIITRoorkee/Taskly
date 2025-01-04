@@ -11,8 +11,11 @@ import 'package:taskly/screens/task_pomodoro_screen.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/storage/meditation_history_storage.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
+import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/widgets/meditation_reminder_widget.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 import 'dart:io';
@@ -30,6 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
+  bool MeditationDailyRemider = false;
+  String LastDateMeditationReminded = "";
 
   @override
   void initState() {
@@ -37,6 +42,29 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetch();
     _loadTasks();
     _loadKudos();
+    _loadMeditationDailyReminderDetails();
+  }
+
+  void _loadMeditationDailyReminderDetails() async {
+    var _MeditationDailyRremider = await MeditationDailyRemiderStorage.get();
+    var _LastDateMeditationReminded = await MeditationDailyRemiderStorage.getLastDate();
+    setState(() {
+      MeditationDailyRemider = _MeditationDailyRremider;
+      LastDateMeditationReminded = _LastDateMeditationReminded;
+      _checkMeditationReminder();
+    });
+
+  }
+  void _checkMeditationReminder() async {
+    print(LastDateMeditationReminded);
+    print(MyDateUtils.getFormattedDate(DateTime.now())); 
+    if (LastDateMeditationReminded != MyDateUtils.getFormattedDate(DateTime.now())) {
+      await MeditationDailyRemiderStorage.saveLastDate(DateTime.now());
+      if (MeditationDailyRemider) {
+        // Show the notification
+        showMeditationCheckDialog(context);
+      }
+    }
   }
 
   void _fetch() async {
@@ -135,11 +163,18 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
-      }
-      else if (option == TaskOption.exportToCSV) {
+      } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
-
+      else if (option == TaskOption.toggleMDR) {
+        if (MeditationDailyRemider) {
+          MeditationDailyRemider = false;
+          MeditationDailyRemiderStorage.save(false);
+        } else {
+          MeditationDailyRemider = true;
+          MeditationDailyRemiderStorage.save(true);
+        }
+      }
     });
   }
 
@@ -157,39 +192,47 @@ class _HomeScreenState extends State<HomeScreen> {
       await TaskStorage.saveTasks(tasks);
     }
   }
-void exportToCSV(List<Task> tasks) async {
-  // Prepare CSV data
-  List<List<dynamic>> rows = [];
 
-  // Add header
-  rows.add(["Title", "Description", "Is Completed","Has Deadline","Deadline"]);
+  void exportToCSV(List<Task> tasks) async {
+    // Prepare CSV data
+    List<List<dynamic>> rows = [];
 
-  // Add data rows
-  for (var task in tasks) {
-    rows.add([task.title, task.description, task.isCompleted,task.hasDeadline,'${task.deadline.day}/${task.deadline.month}/${task.deadline.year}']);
+    // Add header
+    rows.add(
+        ["Title", "Description", "Is Completed", "Has Deadline", "Deadline"]);
+
+    // Add data rows
+    for (var task in tasks) {
+      rows.add([
+        task.title,
+        task.description,
+        task.isCompleted,
+        task.hasDeadline,
+        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+      ]);
+    }
+
+    // Convert to CSV string
+    String csv = const ListToCsvConverter().convert(rows);
+
+    // Open directory picker
+    String? directory = await FilePicker.platform.getDirectoryPath();
+
+    if (directory == null) {
+      // User canceled the picker
+      print("Export canceled.");
+      return;
+    }
+
+    // Create the file path
+    final path = "$directory/tasks.csv";
+
+    // Write the CSV file
+    final file = File(path);
+    await file.writeAsString(csv);
+
+    print("File saved at: $path");
   }
-
-  // Convert to CSV string
-  String csv = const ListToCsvConverter().convert(rows);
-
-  // Open directory picker
-  String? directory = await FilePicker.platform.getDirectoryPath();
-
-  if (directory == null) {
-    // User canceled the picker
-    print("Export canceled.");
-    return;
-  }
-
-  // Create the file path
-  final path = "$directory/tasks.csv";
-
-  // Write the CSV file
-  final file = File(path);
-  await file.writeAsString(csv);
-
-  print("File saved at: $path");
-}
 
   void _loadKudos() async {
     Kudos loadedKudos = await KudosStorage.loadKudos();
@@ -243,6 +286,12 @@ void exportToCSV(List<Task> tasks) async {
                   value: TaskOption.launchMeditationScreen,
                   child: Text("Meditate"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleMDR,
+                  child: MeditationDailyRemider
+                      ? const Text("Stop Daily Meditation Reminder")
+                      : const Text("Start Daily Meditation Reminder"),
+                )
               ];
             },
           ),

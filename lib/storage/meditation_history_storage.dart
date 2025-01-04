@@ -55,3 +55,31 @@ class MeditationHistoryStorage {
   }
 
 } 
+
+
+class MeditationDailyRemiderStorage {
+  static const String _MDRSKey = 'MDRS';
+  static const String _MDRSDateKey = 'MDRSDATE';
+
+  static Future<void> save(bool remind) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_MDRSKey, remind.toString());
+  }
+
+  static Future<bool> get() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? data = prefs.getString(_MDRSKey);
+    return data == 'true';
+  }
+
+  static Future<void> saveLastDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_MDRSDateKey, MyDateUtils.getFormattedDate(date));
+  }
+
+  static Future<String> getLastDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    String date = prefs.getString(_MDRSDateKey) ?? MyDateUtils.getFormattedDate(DateTime.now().subtract(const Duration(days: 1)));
+    return date;
+  }
+}
