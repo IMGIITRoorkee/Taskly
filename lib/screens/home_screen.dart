@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
+  bool showtip = false;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
     (await RandomTipService().getRandomTip()).when(
       (success) {
         tip = success;
+        showtip = true;
         setState(() {});
       },
       (error) {
@@ -135,6 +137,9 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
+      }
+      else if (option == TaskOption.toggleTipVisibility) {
+        showtip = !showtip;
       }
       else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
@@ -231,6 +236,10 @@ void exportToCSV(List<Task> tasks) async {
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleTipVisibility,
+                  child: showtip ? const Text("Hide tip of the day") : const Text("Show tip of the day"),
+                ),
                 const PopupMenuItem(
                   value: TaskOption.exportToCSV,
                   child: Text("Export to CSV file."),
@@ -256,7 +265,7 @@ void exportToCSV(List<Task> tasks) async {
               child: TipOfDayCard(tip: tip),
             ),
             secondChild: Container(),
-            crossFadeState: tip != null
+            crossFadeState: showtip
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
             duration: const Duration(seconds: 1),
