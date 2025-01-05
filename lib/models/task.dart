@@ -10,6 +10,8 @@ class Task {
   double? lat;
   double? lng;
 
+  bool get hasLocationAttached => lat != null && lng != null;
+
   Task({
     required this.title,
     this.description = '',

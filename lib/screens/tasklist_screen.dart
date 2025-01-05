@@ -109,7 +109,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             : null,
                       ),
                     ),
-                    if (task.lat != null && task.lng != null)
+                    if (task.hasLocationAttached)
                       const Icon(Icons.pin_drop_outlined)
                   ],
                 ),

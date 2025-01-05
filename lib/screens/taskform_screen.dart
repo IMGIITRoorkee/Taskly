@@ -3,7 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:taskly/models/task.dart';
-import 'package:taskly/service/permission_service.dart';
+import 'package:taskly/service/location_service.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/spacing.dart';
@@ -213,12 +213,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   onPressed: lat != null && lng != null
                       ? null
                       : () async {
-                          bool permission =
-                              await PermissionService.askForLocation();
-                          if (!permission) return;
+                          Position? position =
+                              await LocationService.getCurrentLocation();
+                          if (position == null) return;
 
-                          Position position =
-                              await Geolocator.getCurrentPosition();
                           setState(() {
                             Fluttertoast.showToast(
                                 msg:
