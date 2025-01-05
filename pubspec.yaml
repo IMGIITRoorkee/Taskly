@@ -51,6 +51,7 @@ dependencies:
   duration_picker: ^1.2.0
   circular_countdown_timer: ^0.2.4
   flutter_confetti: ^0.3.4
+  permission_handler: ^11.3.1
 
 
 dev_dependencies:
