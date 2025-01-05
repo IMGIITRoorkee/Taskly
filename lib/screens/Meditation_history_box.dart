@@ -10,7 +10,8 @@ class MeditationHistory extends StatefulWidget {
 }
 
 class _MeditationHistoryState extends State<MeditationHistory> {
-  Future<List<Map<String, dynamic>>>? history = MeditationHistoryStorage.getHistory();
+  Future<List<Map<String, dynamic>>>? history =
+      MeditationHistoryStorage.getHistory();
 
   @override
   Widget build(BuildContext context) {
@@ -22,29 +23,29 @@ class _MeditationHistoryState extends State<MeditationHistory> {
         } else {
           var meditationHistory = snapshot.data;
           return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             backgroundColor: Colors.black,
             child: Stack(
               children: [
-                SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Meditation History',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Meditation History',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        const SizedBox(height: 16),
-                        ListView.builder(
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView.builder(
                           itemCount: meditationHistory?.length,
                           scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
                           itemBuilder: (context, index) {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
@@ -89,8 +90,8 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                             );
                           },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 Positioned(
