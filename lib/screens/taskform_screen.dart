@@ -239,6 +239,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         hasDeadline: hasDeadline,
                         deadline: hasDeadline ? deadline : null,
                         color: selectedColor,
+                        lat: lat,
+                        lng: lng,
                       );
                       Fluttertoast.showToast(
                           msg: editing
