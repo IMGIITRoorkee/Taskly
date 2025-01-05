@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/service/permission_service.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/widgets/spacing.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -21,6 +24,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   var hasDeadline = false;
   DateTime? deadline;
   Color selectedColor = Colors.blue;
+  double? lat, lng;
 
   bool isTitleListening = false;
 
@@ -33,6 +37,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     hasDeadline = widget.task?.hasDeadline ?? false;
     deadline = widget.task?.deadline;
     selectedColor = widget.task?.color ?? Colors.blue;
+    lat = widget.task?.lat;
+    lng = widget.task?.lng;
   }
 
   void _showColorPicker() {
@@ -88,7 +94,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     } else {
       _startListening(controller);
     }
-
   }
 
   @override
@@ -203,7 +208,27 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   },
                   child: const Text('Select Deadline'),
                 ),
+                const Spacing(),
+                ElevatedButton(
+                  onPressed: lat != null && lng != null
+                      ? null
+                      : () async {
+                          bool permission =
+                              await PermissionService.askForLocation();
+                          if (!permission) return;
 
+                          Position position =
+                              await Geolocator.getCurrentPosition();
+                          setState(() {
+                            Fluttertoast.showToast(
+                                msg:
+                                    "Task will be auto-completed when you are again at this location");
+                            lat = position.latitude;
+                            lng = position.longitude;
+                          });
+                        },
+                  child: const Text("Autocomplete task at current location"),
+                ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
