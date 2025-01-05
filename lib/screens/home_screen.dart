@@ -197,7 +197,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (directory == null) {
       // User canceled the picker
-      print("Export canceled.");
       return;
     }
 
@@ -208,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final file = File(path);
     await file.writeAsString(csv);
 
-    print("File saved at: $path");
+    Fluttertoast.showToast(msg: "File saved at: $path");
   }
 
   void _loadKudos() async {
