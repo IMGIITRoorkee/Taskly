@@ -227,6 +227,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         },
                   child: const Text("Autocomplete task at current location"),
                 ),
+                if (lat != null && lng != null)
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        lat = lng = null;
+                      });
+                    },
+                    child: const Text("Detach location from task"),
+                  ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
