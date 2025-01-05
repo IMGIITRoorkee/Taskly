@@ -51,11 +51,10 @@ class _MeditationScreenState extends State<MeditationScreen>
       remainingSeconds = selectedMinutes * 60;
       extraSeconds = 0;
     });
-    if (playaudio){
- audioPlayer.resume();
-    isAudioPlaying = true;
+    if (playaudio) {
+      audioPlayer.resume();
+      isAudioPlaying = true;
     }
-   
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -73,24 +72,29 @@ class _MeditationScreenState extends State<MeditationScreen>
       int timeDiff;
       int totalMeditationTime;
       String message;
+      bool endedTooSoon = false;
 
       if (remainingSeconds == 0) {
         // Session went over time
         timeDiff = extraSeconds;
         totalMeditationTime = selectedMinutes * 60 + extraSeconds;
-        message =
-            ExtraMeditation(selectedMinutes,extraSeconds);
+        message = extraMeditation(selectedMinutes, extraSeconds);
+        MeditationHistoryStorage.addToHistory(selectedMinutes, timeDiff);
       } else {
         // Session ended early
         timeDiff = -remainingSeconds;
         totalMeditationTime = (selectedMinutes * 60) - remainingSeconds;
         int minutesMeditated = totalMeditationTime ~/ 60;
         int secondsMeditated = totalMeditationTime % 60;
-        message =
-            MeditationComplete(minutesMeditated, secondsMeditated);
-      }
 
-      MeditationHistoryStorage.addToHistory(selectedMinutes,timeDiff);
+        if (minutesMeditated == 0 && secondsMeditated == 0) {
+          endedTooSoon = true;
+          message = meditationEndedTooSoon();
+        } else {
+          message = meditationComplete(minutesMeditated, secondsMeditated);
+          MeditationHistoryStorage.addToHistory(selectedMinutes, timeDiff);
+        }
+      }
 
       // Show completion message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -105,11 +109,12 @@ class _MeditationScreenState extends State<MeditationScreen>
                   style: const TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
-                const Text(
-                  'Keep up the great work! 🧘‍♂️',
-                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-                  textAlign: TextAlign.center,
-                ),
+                if (!endedTooSoon)
+                  const Text(
+                    'Keep up the great work! 🧘‍♂️',
+                    style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                    textAlign: TextAlign.center,
+                  ),
               ],
             ),
           ),
@@ -125,12 +130,12 @@ class _MeditationScreenState extends State<MeditationScreen>
 
       isRunning = false;
       timer?.cancel();
-      if (isAudioPlaying){
-      audioPlayer.pause();
-      isAudioPlaying = false;
+      if (isAudioPlaying) {
+        audioPlayer.pause();
+        isAudioPlaying = false;
       }
       remainingSeconds = 0;
-  extraSeconds = 0;
+      extraSeconds = 0;
     });
   }
 
@@ -263,16 +268,15 @@ class _MeditationScreenState extends State<MeditationScreen>
                                     ),
                                     const SizedBox(width: 10),
                                     Switch(
-                                  value: playaudio,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      playaudio = value;
-                                    });
-                                  },
-                                ),
+                                      value: playaudio,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          playaudio = value;
+                                        });
+                                      },
+                                    ),
                                   ],
                                 )
-                                
                               ],
                             ),
                           ),
@@ -354,7 +358,7 @@ class _MeditationScreenState extends State<MeditationScreen>
                           ),
                           child: Text(
                             isRunning ? 'End Session' : 'Begin',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               letterSpacing: 1.5,
                               color: Colors.white,
