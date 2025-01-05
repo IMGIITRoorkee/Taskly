@@ -137,14 +137,11 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
-      }
-      else if (option == TaskOption.toggleTipVisibility) {
+      } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
-      }
-      else if (option == TaskOption.exportToCSV) {
+      } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
-
     });
   }
 
@@ -162,39 +159,51 @@ class _HomeScreenState extends State<HomeScreen> {
       await TaskStorage.saveTasks(tasks);
     }
   }
-void exportToCSV(List<Task> tasks) async {
-  // Prepare CSV data
-  List<List<dynamic>> rows = [];
 
-  // Add header
-  rows.add(["Title", "Description", "Is Completed","Has Deadline","Deadline"]);
+  void exportToCSV(List<Task> tasks) async {
+    if (tasks.isEmpty) {
+      Fluttertoast.showToast(msg: "There are no tasks to export!");
+    }
 
-  // Add data rows
-  for (var task in tasks) {
-    rows.add([task.title, task.description, task.isCompleted,task.hasDeadline,'${task.deadline.day}/${task.deadline.month}/${task.deadline.year}']);
+    // Prepare CSV data
+    List<List<dynamic>> rows = [];
+
+    // Add header
+    rows.add(
+        ["Title", "Description", "Is Completed", "Has Deadline", "Deadline"]);
+
+    // Add data rows
+    for (var task in tasks) {
+      rows.add([
+        task.title,
+        task.description,
+        task.isCompleted,
+        task.hasDeadline,
+        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+      ]);
+    }
+
+    // Convert to CSV string
+    String csv = const ListToCsvConverter().convert(rows);
+
+    // Open directory picker
+    String? directory = await FilePicker.platform.getDirectoryPath();
+
+    if (directory == null) {
+      // User canceled the picker
+      print("Export canceled.");
+      return;
+    }
+
+    // Create the file path
+    final path = "$directory/tasks.csv";
+
+    // Write the CSV file
+    final file = File(path);
+    await file.writeAsString(csv);
+
+    print("File saved at: $path");
   }
-
-  // Convert to CSV string
-  String csv = const ListToCsvConverter().convert(rows);
-
-  // Open directory picker
-  String? directory = await FilePicker.platform.getDirectoryPath();
-
-  if (directory == null) {
-    // User canceled the picker
-    print("Export canceled.");
-    return;
-  }
-
-  // Create the file path
-  final path = "$directory/tasks.csv";
-
-  // Write the CSV file
-  final file = File(path);
-  await file.writeAsString(csv);
-
-  print("File saved at: $path");
-}
 
   void _loadKudos() async {
     Kudos loadedKudos = await KudosStorage.loadKudos();
@@ -238,7 +247,9 @@ void exportToCSV(List<Task> tasks) async {
                 ),
                 PopupMenuItem(
                   value: TaskOption.toggleTipVisibility,
-                  child: showtip ? const Text("Hide tip of the day") : const Text("Show tip of the day"),
+                  child: showtip
+                      ? const Text("Hide tip of the day")
+                      : const Text("Show tip of the day"),
                 ),
                 const PopupMenuItem(
                   value: TaskOption.exportToCSV,
@@ -265,9 +276,8 @@ void exportToCSV(List<Task> tasks) async {
               child: TipOfDayCard(tip: tip),
             ),
             secondChild: Container(),
-            crossFadeState: showtip
-                ? CrossFadeState.showFirst
-                : CrossFadeState.showSecond,
+            crossFadeState:
+                showtip ? CrossFadeState.showFirst : CrossFadeState.showSecond,
             duration: const Duration(seconds: 1),
           ),
           tasks.isEmpty
