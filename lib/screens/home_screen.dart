@@ -162,11 +162,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void exportToCSV(List<Task> tasks) async {
-    bool status = await PermissionsService.askForStorage();
-    if (!status) {
-      Fluttertoast.showToast(
-          msg: "Storage permission is needed to export csv file!");
-      return;
+    if (Platform.isAndroid) {
+      bool status = await PermissionsService.askForStorage();
+      if (!status) {
+        Fluttertoast.showToast(
+            msg: "Storage permission is needed to export csv file!");
+        return;
+      }
     }
 
     // Prepare CSV data
