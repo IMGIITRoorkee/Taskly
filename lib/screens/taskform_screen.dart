@@ -33,10 +33,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
     hasDeadline = widget.task?.hasDeadline ?? false;
-    deadline = widget.task?.deadline;
     selectedColor = widget.task?.color ?? Colors.blue;
     repeatInterval =
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
+
+    if (hasDeadline) deadline = widget.task?.deadline;
   }
 
   void _showColorPicker() {
