@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _toggleTaskCompletion(int index, bool? value) async {
     setState(() {
-      tasks[index].isCompleted = value ?? false;
+      tasks[index].toggleCompletion();
 
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
