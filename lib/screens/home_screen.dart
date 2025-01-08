@@ -33,8 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
-  bool MeditationDailyRemider = false;
-  String LastDateMeditationReminded = "";
+  bool meditationDailyRemider = false;
+  String lastDateMeditationReminded = "";
 
   @override
   void initState() {
@@ -45,22 +45,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadMeditationDailyReminderDetails();
   }
 
-  void _loadMeditationDailyReminderDetails() async {
-    var _MeditationDailyRremider = await MeditationDailyRemiderStorage.get();
-    var _LastDateMeditationReminded = await MeditationDailyRemiderStorage.getLastDate();
+  void _loadMeditationDailyReminderDetails()  async {
+    meditationDailyRemider = await MeditationDailyRemiderStorage.get();
+    lastDateMeditationReminded = await MeditationDailyRemiderStorage.getLastDate();
     setState(() {
-      MeditationDailyRemider = _MeditationDailyRremider;
-      LastDateMeditationReminded = _LastDateMeditationReminded;
       _checkMeditationReminder();
     });
 
   }
   void _checkMeditationReminder() async {
-    print(LastDateMeditationReminded);
-    print(MyDateUtils.getFormattedDate(DateTime.now())); 
-    if (LastDateMeditationReminded != MyDateUtils.getFormattedDate(DateTime.now())) {
+    if (lastDateMeditationReminded == MyDateUtils.getFormattedDate(DateTime.now())) {
       await MeditationDailyRemiderStorage.saveLastDate(DateTime.now());
-      if (MeditationDailyRemider) {
+      if (meditationDailyRemider) {
         // Show the notification
         showMeditationCheckDialog(context);
       }
@@ -167,11 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
         exportToCSV(tasks);
       }
       else if (option == TaskOption.toggleMDR) {
-        if (MeditationDailyRemider) {
-          MeditationDailyRemider = false;
+        if (meditationDailyRemider) {
+          meditationDailyRemider = false;
           MeditationDailyRemiderStorage.save(false);
         } else {
-          MeditationDailyRemider = true;
+          meditationDailyRemider = true;
           MeditationDailyRemiderStorage.save(true);
         }
       }
@@ -231,7 +227,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final file = File(path);
     await file.writeAsString(csv);
 
-    print("File saved at: $path");
   }
 
   void _loadKudos() async {
@@ -288,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 PopupMenuItem(
                   value: TaskOption.toggleMDR,
-                  child: MeditationDailyRemider
+                  child: meditationDailyRemider
                       ? const Text("Stop Daily Meditation Reminder")
                       : const Text("Start Daily Meditation Reminder"),
                 )

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskly/enums/meditation_reminder_options.dart';
 import 'package:taskly/screens/meditation_screen.dart';
 
 class MeditationCheckDialog extends StatelessWidget {
@@ -72,7 +73,7 @@ class MeditationCheckDialog extends StatelessWidget {
             Column(
               children: [
                 ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop('yes'),
+                  onPressed: () => Navigator.of(context).pop(MeditationReminderOptions.yesAlreadyDone),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     minimumSize: const Size(double.infinity, 48),
@@ -81,14 +82,14 @@ class MeditationCheckDialog extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Yes',
+                    'Yes Already Done 👍',
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 12),
                 
                 ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop('meditate_now'),
+                  onPressed: () => Navigator.of(context).pop(MeditationReminderOptions.meditateNow),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     minimumSize: const Size(double.infinity, 48),
@@ -97,14 +98,14 @@ class MeditationCheckDialog extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Meditate Now',
+                    'Meditate Now 🧘‍♂️',
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 12),
                 
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop('later'),
+                  onPressed: () => Navigator.of(context).pop(MeditationReminderOptions.later),
                   style: TextButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
@@ -185,26 +186,22 @@ void showMeditationCheckDialog(BuildContext context) {
     context: context,
     builder: (context) => const MeditationCheckDialog(),
   ).then((value) {
-    switch (value) {
-      case 'yes':
-        const MeditationCheckDialog()._showSimpleCelebration(context);
-        break;
-        
-      case 'meditate_now':
-        Navigator.push(
+    if (value == MeditationReminderOptions.yesAlreadyDone){
+              const MeditationCheckDialog()._showSimpleCelebration(context);
+    }
+    else if (value == MeditationReminderOptions.meditateNow){
+              Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const MeditationScreen()),
         );
-        break;
-        
-      case 'later':
-        ScaffoldMessenger.of(context).showSnackBar(
+    }
+    else if (value== MeditationReminderOptions.later){
+      ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Don't forget to take a moment for yourself today"),
             duration: Duration(seconds: 2),
           ),
         );
-        break;
     }
   });
 }

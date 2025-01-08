@@ -58,28 +58,28 @@ class MeditationHistoryStorage {
 
 
 class MeditationDailyRemiderStorage {
-  static const String _MDRSKey = 'MDRS';
-  static const String _MDRSDateKey = 'MDRSDATE';
+  static const String _mdrsKey = 'MDRS'; // MDRS = Meditation Daily Reminder Storage
+  static const String _mdrsDateKey = 'MDRSDATE'; // MDRSDATE = Meditation Daily Reminder Storage Date
 
   static Future<void> save(bool remind) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_MDRSKey, remind.toString());
+    await prefs.setString(_mdrsKey, remind.toString());
   }
 
   static Future<bool> get() async {
     final prefs = await SharedPreferences.getInstance();
-    String? data = prefs.getString(_MDRSKey);
+    String? data = prefs.getString(_mdrsKey);
     return data == 'true';
   }
 
   static Future<void> saveLastDate(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_MDRSDateKey, MyDateUtils.getFormattedDate(date));
+    await prefs.setString(_mdrsDateKey, MyDateUtils.getFormattedDate(date));
   }
 
   static Future<String> getLastDate() async {
     final prefs = await SharedPreferences.getInstance();
-    String date = prefs.getString(_MDRSDateKey) ?? MyDateUtils.getFormattedDate(DateTime.now().subtract(const Duration(days: 1)));
+    String date = prefs.getString(_mdrsDateKey) ?? MyDateUtils.getFormattedDate(DateTime.now().subtract(const Duration(days: 1)));
     return date;
   }
 }
