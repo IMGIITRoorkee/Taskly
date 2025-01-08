@@ -54,20 +54,21 @@ class _MeditationScreenState extends State<MeditationScreen>
     if (playaudio) {
       audioPlayer.resume();
       isAudioPlaying = true;
-    if (playaudio) {
-      audioPlayer.resume();
-      isAudioPlaying = true;
-    }
+      if (playaudio) {
+        audioPlayer.resume();
+        isAudioPlaying = true;
+      }
 
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (remainingSeconds > 0) {
-          remainingSeconds--;
-        } else {
-          extraSeconds++;
-        }
+      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        setState(() {
+          if (remainingSeconds > 0) {
+            remainingSeconds--;
+          } else {
+            extraSeconds++;
+          }
+        });
       });
-    });
+    }
   }
 
   void stopTimer() {
