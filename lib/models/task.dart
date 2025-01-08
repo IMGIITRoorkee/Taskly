@@ -7,8 +7,18 @@ class Task {
   DateTime deadline;
   bool hasDeadline;
   Color color;
+  int? recurringDays;
 
-  Task({required this.title, this.description = '', this.isCompleted = false, DateTime? deadline, this.hasDeadline = false,this.color = Colors.blue })
+  bool get isRecurring => recurringDays != null;
+
+  Task(
+      {required this.title,
+      this.description = '',
+      this.isCompleted = false,
+      DateTime? deadline,
+      this.hasDeadline = false,
+      this.color = Colors.blue,
+      this.recurringDays})
       : deadline = deadline ?? DateTime.now();
 
   // Convert a Task object to JSON
@@ -19,6 +29,7 @@ class Task {
       'isCompleted': isCompleted,
       'deadline': deadline.toIso8601String(),
       'hasDeadline': hasDeadline,
+      'recurringDays': recurringDays,
       'color': color.value,
     };
   }
@@ -31,7 +42,20 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
+      recurringDays: json['recurringDays'],
       color: Color(json['color']),
     );
+  }
+
+  void toggleCompletion() {
+    if (!isRecurring) {
+      isCompleted = !isCompleted;
+      return;
+    }
+
+    if (hasDeadline) {
+      deadline = deadline.add(Duration(days: recurringDays!));
+      return;
+    }
   }
 }
