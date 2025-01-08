@@ -7,7 +7,6 @@ String completedAfterDeadline(int daysDiff) =>
 String completeTaskWithNoDeadline(String task) => "completed $task";
 scoreReducedForTask(String task) => "Score reduced for $task";
 
-
 //suggestions
 final List<String> suggestions = [
   'Grocery shopping',
@@ -120,8 +119,9 @@ String stayFocused(int min) => "Stay focused for $min minutes";
 String relax(int min) => "Relax for $min minutes";
 
 //Meditation Completion
-String ExtraMeditation(int selectedMinutes, int extraSeconds) =>
+String extraMeditation(int selectedMinutes, int extraSeconds) =>
     "Great job! You meditated for $selectedMinutes minutes and $extraSeconds extra seconds";
-String MeditationComplete(int minutesMeditated, int secondsMeditated) =>
+String meditationComplete(int minutesMeditated, int secondsMeditated) =>
     "Session ended. You meditated for $minutesMeditated minutes and $secondsMeditated seconds";
 String AskDependencyCompletion = "Complete the dependency first!";
+String meditationEndedTooSoon() => "Oh no! You stopped meditating too quickly!";
