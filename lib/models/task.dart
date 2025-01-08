@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Task {
+  String id;
   String title;
   String description;
   bool isCompleted;
@@ -20,9 +21,10 @@ class Task {
       this.hasDeadline = false,
       this.color = Colors.blue,
       this.recurringDays,
-      this.dependency})
-
-      : deadline = deadline ?? DateTime.now();
+      this.dependency,
+      String? id})
+      : deadline = deadline ?? DateTime.now(),
+        id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -35,6 +37,7 @@ class Task {
       'dependency': dependency?.toJson(),
       'recurringDays': recurringDays,
       'color': color.value,
+      'id': id,
     };
   }
 
@@ -46,9 +49,11 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
-      dependency: json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
+      dependency:
+          json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
+      id: json['id'],
     );
   }
 
@@ -62,5 +67,10 @@ class Task {
       deadline = deadline.add(Duration(days: recurringDays!));
       return;
     }
+  }
+
+  @override
+  String toString() {
+    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
   }
 }
