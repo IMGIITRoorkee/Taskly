@@ -257,7 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
         task.description,
         task.isCompleted,
         task.hasDeadline,
-        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+        task.hasDeadline
+            ? '${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}'
+            : null,
       ]);
     }
 

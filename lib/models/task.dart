@@ -61,7 +61,7 @@ class Task {
     }
 
     if (hasDeadline) {
-      deadline = deadline.add(Duration(days: recurringDays!));
+      deadline = deadline!.add(Duration(days: recurringDays!));
       return;
     }
   }

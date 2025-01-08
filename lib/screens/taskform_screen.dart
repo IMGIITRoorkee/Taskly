@@ -344,7 +344,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           Task task = Task(
             title: _titleController.text,
             description: _descController.text,
-            hasDeadline: hasDeadline,
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
