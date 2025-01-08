@@ -50,7 +50,7 @@ class Task {
           json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
-      id: json['id'],
+      id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
     );
   }
 
