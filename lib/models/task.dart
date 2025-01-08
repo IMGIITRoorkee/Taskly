@@ -8,6 +8,7 @@ class Task {
   bool hasDeadline;
   Color color;
   int? recurringDays;
+  Task? dependency;
 
   bool get isRecurring => recurringDays != null;
 
@@ -18,7 +19,9 @@ class Task {
       DateTime? deadline,
       this.hasDeadline = false,
       this.color = Colors.blue,
-      this.recurringDays})
+      this.recurringDays,
+      this.dependency})
+
       : deadline = deadline ?? DateTime.now();
 
   // Convert a Task object to JSON
@@ -29,6 +32,7 @@ class Task {
       'isCompleted': isCompleted,
       'deadline': deadline.toIso8601String(),
       'hasDeadline': hasDeadline,
+      'dependency': dependency?.toJson(),
       'recurringDays': recurringDays,
       'color': color.value,
     };
@@ -42,6 +46,7 @@ class Task {
       isCompleted: json['isCompleted'],
       deadline: DateTime.parse(json['deadline']),
       hasDeadline: json['hasDeadline'],
+      dependency: json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
     );
