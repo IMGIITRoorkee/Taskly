@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _toggleTaskCompletion(int index, bool? value) async {
     if (tasks[index].dependency != null && !tasks[index].dependency!.isCompleted) {
       Fluttertoast.showToast(
-        msg: 'Complete the dependency first!',
+        msg: AskDependencyCompletion,
         toastLength: Toast.LENGTH_LONG,
       );
       return;
