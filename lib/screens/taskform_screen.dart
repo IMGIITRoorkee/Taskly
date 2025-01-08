@@ -300,7 +300,7 @@ void _createOverlay() {
               context: context,
               initialDate: DateTime.now(),
               firstDate: DateTime.now(),
-              lastDate: DateTime(2025),
+              lastDate: DateTime.now(),
             );
             if (selectedDate != null) {
               setState(() {
