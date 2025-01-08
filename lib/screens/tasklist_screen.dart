@@ -39,6 +39,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
       builder: (context) => TaskBoxWidget(
         task: task,
         onEdit: () => widget.onEdit(index),
+        onStart: () => widget.onStart(index),
         onDelete: () async {
           setState(() {
             deletedTask = widget.tasks[index];
