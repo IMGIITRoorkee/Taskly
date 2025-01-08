@@ -3,4 +3,7 @@ enum TaskOption {
   deleteSelected,
   deleteAll,
   showKudos,
+  launchMeditationScreen,
+  toggleTipVisibility,
+  exportToCSV,
 }

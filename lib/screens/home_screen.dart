@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
-import 'package:taskly/kudos_storage.dart';
+import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
 import 'package:taskly/screens/kudos_details.dart';
+import 'package:taskly/screens/meditation_screen.dart';
+import 'package:taskly/screens/task_pomodoro_screen.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
-import 'package:taskly/task_storage.dart';
+import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
+import 'dart:io';
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
+  bool showtip = false;
   Set<int> selectedIndexes = {};
 
   @override
@@ -39,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     (await RandomTipService().getRandomTip()).when(
       (success) {
         tip = success;
+        showtip = true;
         setState(() {});
       },
       (error) {
@@ -66,8 +73,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _toggleTaskCompletion(int index, bool? value) async {
+    if (tasks[index].dependency != null &&
+        !tasks[index].dependency!.isCompleted) {
+      Fluttertoast.showToast(
+        msg: AskDependencyCompletion,
+        toastLength: Toast.LENGTH_LONG,
+      );
+      return;
+    }
     setState(() {
-      tasks[index].isCompleted = value ?? false;
+      tasks[index].toggleCompletion();
 
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
@@ -143,8 +158,32 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedIndexes = {};
           TaskStorage.saveTasks(tasks);
         });
+      } else if (option == TaskOption.launchMeditationScreen) {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const MeditationScreen()));
+      } else if (option == TaskOption.toggleTipVisibility) {
+        showtip = !showtip;
+      } else if (option == TaskOption.exportToCSV) {
+        exportToCSV(tasks);
       }
     });
+    void _editTask(int index) async {
+      final newTask = await Navigator.push<Task>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TaskFormScreen(
+            task: tasks[index],
+            availableTasks: tasks,
+          ),
+        ),
+      );
+
+      if (newTask != null) {
+        tasks[index] = newTask;
+        setState(() {});
+        await TaskStorage.saveTasks(tasks);
+      }
+    }
   }
 
   void _onSelectionAdded(int index) => setState(() {
@@ -165,7 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final newTask = await Navigator.push<Task>(
       context,
       MaterialPageRoute(
-        builder: (context) => TaskFormScreen(task: tasks[index]),
+        builder: (context) => TaskFormScreen(
+          task: tasks[index],
+          availableTasks: tasks,
+        ),
       ),
     );
 
@@ -176,11 +218,67 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void exportToCSV(List<Task> tasks) async {
+    // Prepare CSV data
+    List<List<dynamic>> rows = [];
+
+    // Add header
+    rows.add(
+        ["Title", "Description", "Is Completed", "Has Deadline", "Deadline"]);
+
+    // Add data rows
+    for (var task in tasks) {
+      rows.add([
+        task.title,
+        task.description,
+        task.isCompleted,
+        task.hasDeadline,
+        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+      ]);
+    }
+
+    // Convert to CSV string
+    String csv = const ListToCsvConverter().convert(rows);
+
+    // Open directory picker
+    String? directory = await FilePicker.platform.getDirectoryPath();
+
+    if (directory == null) {
+      // User canceled the picker
+      print("Export canceled.");
+      return;
+    }
+
+    // Create the file path
+    final path = "$directory/tasks.csv";
+
+    // Write the CSV file
+    final file = File(path);
+    await file.writeAsString(csv);
+
+    print("File saved at: $path");
+  }
+
   void _loadKudos() async {
     Kudos loadedKudos = await KudosStorage.loadKudos();
     setState(() {
       kudos = loadedKudos;
     });
+  }
+
+  void _onStartTask(int index) async {
+    // close the task details dialog
+    Navigator.pop(context);
+
+    bool? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskPomodoroScreen(task: tasks[index]),
+      ),
+    );
+    if (result != null && result) {
+      _toggleTaskCompletion(index, true);
+    }
   }
 
   @override
@@ -205,10 +303,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleTipVisibility,
+                  child: showtip
+                      ? const Text("Hide tip of the day")
+                      : const Text("Show tip of the day"),
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.exportToCSV,
+                  child: Text("Export to CSV file."),
+                ),
                 const PopupMenuItem(
                   value: TaskOption.showKudos,
                   child: Text("My Kudos"),
-                )
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.launchMeditationScreen,
+                  child: Text("Meditate"),
+                ),
               ];
             },
           ),
@@ -222,9 +334,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: TipOfDayCard(tip: tip),
             ),
             secondChild: Container(),
-            crossFadeState: tip != null
-                ? CrossFadeState.showFirst
-                : CrossFadeState.showSecond,
+            crossFadeState:
+                showtip ? CrossFadeState.showFirst : CrossFadeState.showSecond,
             duration: const Duration(seconds: 1),
           ),
           tasks.isEmpty
@@ -236,6 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   selectedIndexes: selectedIndexes,
                   onSelectionAdded: _onSelectionAdded,
                   onSelectionRemoved: _onSelectionRemoved,
+                  onStart: _onStartTask,
                 ),
         ],
       ),
@@ -243,7 +355,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () async {
           final newTask = await Navigator.push<Task>(
             context,
-            MaterialPageRoute(builder: (context) => const TaskFormScreen()),
+            MaterialPageRoute(
+                builder: (context) => TaskFormScreen(
+                      availableTasks: tasks,
+                    )),
           );
           if (newTask != null) {
             _addTask(newTask);

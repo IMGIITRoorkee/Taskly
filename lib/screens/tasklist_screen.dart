@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
-import 'package:taskly/task_storage.dart';
+import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -12,6 +12,7 @@ class TaskListScreen extends StatefulWidget {
   final Set<int> selectedIndexes;
   final Function(int) onSelectionAdded;
   final Function(int) onSelectionRemoved;
+  final Function(int) onStart;
 
   const TaskListScreen({
     super.key,
@@ -21,6 +22,7 @@ class TaskListScreen extends StatefulWidget {
     required this.selectedIndexes,
     required this.onSelectionAdded,
     required this.onSelectionRemoved,
+    required this.onStart,
   });
 
   @override
@@ -106,10 +108,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-            child: Container(
+            child: Card(
+              elevation: 0,
               color: widget.selectedIndexes.contains(index)
                   ? Colors.grey.withOpacity(0.5)
                   : task.color.withOpacity(0.2),
+              margin: const EdgeInsets.all(0),
               child: ListTile(
                 onTap: () {
                   if (widget.selectedIndexes.isEmpty) {
@@ -150,6 +154,17 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (task.dependency != null &&
+                        !task.dependency!.isCompleted)
+                      const Icon(
+                        Icons.link,
+                        color: Colors.blue,
+                      ),
+                    if (task.dependency != null && task.dependency!.isCompleted)
+                      const Icon(
+                        Icons.link,
+                        color: Colors.green,
+                      ),
                     IconButton(
                       onPressed: () => widget.onEdit(index),
                       icon: const Icon(Icons.edit),
