@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:taskly/google_calendar.dart';
 import 'package:taskly/models/task.dart';
 
 class TaskBoxWidget extends StatelessWidget {
@@ -6,6 +8,7 @@ class TaskBoxWidget extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onClose;
+  final VoidCallback onStart;
 
   const TaskBoxWidget({
     super.key,
@@ -13,6 +16,7 @@ class TaskBoxWidget extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onClose,
+    required this.onStart,
   });
 
   @override

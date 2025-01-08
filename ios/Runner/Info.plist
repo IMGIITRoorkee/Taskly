@@ -49,5 +49,10 @@
     <string>Uses speech recognition to allow users to create tasks based on speech</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Uses microphone to to allow users to create tasks based on speech</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+
 </dict>
 </plist>
