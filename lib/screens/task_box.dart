@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:taskly/google_calendar.dart';
 import 'package:taskly/models/task.dart';
 
 class TaskBoxWidget extends StatelessWidget {
@@ -93,6 +95,21 @@ class TaskBoxWidget extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      if (task.hasDeadline)
+                        IconButton(
+                          onPressed: () {
+                            openGoogleCalendar(
+                              title: task.title,
+                              description: task.description,
+                              deadline: task.deadline,
+                            );
+                          },
+                          icon: SvgPicture.asset(
+                            'assets/svg/Google_Calendar.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                          ),
                       if (!task.isCompleted)
                         IconButton(
                           icon: const Icon(Icons.play_arrow_rounded),
