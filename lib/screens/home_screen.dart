@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Tip? tip;
   bool meditationDailyRemider = false;
   String lastDateMeditationReminded = "";
+  bool showtip = false;
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     (await RandomTipService().getRandomTip()).when(
       (success) {
         tip = success;
+        showtip = true;
         setState(() {});
       },
       (error) {
@@ -94,8 +96,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _toggleTaskCompletion(int index, bool? value) async {
+    if (tasks[index].dependency != null && !tasks[index].dependency!.isCompleted) {
+      Fluttertoast.showToast(
+        msg: AskDependencyCompletion,
+        toastLength: Toast.LENGTH_LONG,
+      );
+      return;
+    } 
     setState(() {
-      tasks[index].isCompleted = value ?? false;
+      tasks[index].toggleCompletion();
 
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
@@ -159,7 +168,11 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
-      } else if (option == TaskOption.exportToCSV) {
+      }
+      else if (option == TaskOption.toggleTipVisibility) {
+        showtip = !showtip;
+      }
+      else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
       else if (option == TaskOption.toggleMDR) {
@@ -172,13 +185,27 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
+    void _editTask(int index) async {
+      final newTask = await Navigator.push<Task>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TaskFormScreen(task: tasks[index], availableTasks: tasks,),
+        ),
+      );
+
+      if (newTask != null) {
+        tasks[index] = newTask;
+        setState(() {});
+        await TaskStorage.saveTasks(tasks);
+      }
+    }
   }
 
   void _editTask(int index) async {
     final newTask = await Navigator.push<Task>(
       context,
       MaterialPageRoute(
-        builder: (context) => TaskFormScreen(task: tasks[index]),
+        builder: (context) => TaskFormScreen(task: tasks[index], availableTasks: tasks,),
       ),
     );
 
@@ -269,6 +296,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleTipVisibility,
+                  child: showtip ? const Text("Hide tip of the day") : const Text("Show tip of the day"),
+                ),
                 const PopupMenuItem(
                   value: TaskOption.exportToCSV,
                   child: Text("Export to CSV file."),
@@ -300,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: TipOfDayCard(tip: tip),
             ),
             secondChild: Container(),
-            crossFadeState: tip != null
+            crossFadeState: showtip
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
             duration: const Duration(seconds: 1),
@@ -319,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () async {
           final newTask = await Navigator.push<Task>(
             context,
-            MaterialPageRoute(builder: (context) => const TaskFormScreen()),
+            MaterialPageRoute(builder: (context) => TaskFormScreen(availableTasks: tasks,)),
           );
           if (newTask != null) {
             _addTask(newTask);

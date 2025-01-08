@@ -4,5 +4,6 @@ enum TaskOption {
   showKudos,
   launchMeditationScreen,
   exportToCSV,
+  toggleTipVisibility,
   toggleMDR, // to toggle Medatation Daily Reminder
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:taskly/google_calendar.dart';
 import 'package:taskly/models/task.dart';
 
 class TaskBoxWidget extends StatelessWidget {
@@ -62,10 +64,52 @@ class TaskBoxWidget extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
+                  // Dependency (if applicable)
+                  if (task.dependency != null)
+                    Row(
+                      children: [
+                        const Icon(Icons.link, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Depends on: ${task.dependency!.title}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        if (task.dependency!.isCompleted)
+                          const Text(
+                            'Completed',
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.green),
+                          ),
+                        if (!task.dependency!.isCompleted)
+                          const Text(
+                            'Pending',
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.red),
+                          ),
+                      ],
+                    ),
+                  const SizedBox(height: 20),
+
                   // Edit and Delete Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      if (task.hasDeadline)
+                        IconButton(
+                          onPressed: () {
+                            openGoogleCalendar(
+                              title: task.title,
+                              description: task.description,
+                              deadline: task.deadline,
+                            );
+                          },
+                          icon: SvgPicture.asset(
+                            'assets/svg/Google_Calendar.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                          ),
                       if (!task.isCompleted)
                         IconButton(
                           icon: const Icon(Icons.play_arrow_rounded),
