@@ -1,9 +1,10 @@
 // Enum to represent options in the menu
 enum TaskOption {
+  deleteSelected,
   deleteAll,
   showKudos,
   launchMeditationScreen,
-  exportToCSV,
   toggleTipVisibility,
+  exportToCSV,
   toggleMDR, // to toggle Medatation Daily Reminder
 }
