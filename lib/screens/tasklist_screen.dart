@@ -30,12 +30,11 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  final Map<String, bool> _expandedSections = {};
   int? deletedIndex;
   Task? deletedTask;
-  Map<String, bool> sectionExpanded = {};
 
-  // Group tasks by deadline
-  Map<String, List<Task>> _groupTasksByDeadline() {
+  List<MapEntry<String, List<Task>>> _groupTasksByDeadline() {
     final Map<String, List<Task>> grouped = {
       'No Deadline': [],
     };
@@ -46,129 +45,17 @@ class _TaskListScreenState extends State<TaskListScreen> {
         continue;
       }
       
-      String key = MyDateUtils.getFormattedDate(task.deadline);
-      if (!grouped.containsKey(key)) {
-        grouped[key] = [];
-        // Initialize expansion state
-        if (!sectionExpanded.containsKey(key)) {
-          sectionExpanded[key] = true;
-        }
-      }
-      grouped[key]!.add(task);
+      final deadline = MyDateUtils.getFormattedDate(task.deadline!);
+      grouped.putIfAbsent(deadline, () => []);
+      grouped[deadline]!.add(task);
     }
     
-    return grouped;
-  }
-
-  Widget _buildTaskTile(Task task, int globalIndex) {
-    return Slidable(
-      endActionPane: ActionPane(
-        motion: const StretchMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (context) async {
-              setState(() {
-                widget.tasks.removeAt(globalIndex);
-              });
-              await TaskStorage.saveTasks(widget.tasks);
-            },
-            icon: Icons.delete,
-            foregroundColor: Colors.red,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-        child: Card(
-          elevation: 0,
-          color: task.color.withOpacity(0.2),
-          margin: const EdgeInsets.all(0),
-          child: ListTile(
-            onTap: () => _showTaskDialog(task, globalIndex),
-            title: Row(
-              children: [
-                Text(
-                  task.title,
-                  style: TextStyle(
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if (task.isRecurring) const Icon(Icons.repeat_rounded, size: 16),
-              ],
-            ),
-            subtitle: Text(
-              task.description.length > 30
-                  ? '${task.description.substring(0, 30)}...'
-                  : task.description,
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (task.dependency != null)
-                  Icon(
-                    Icons.link,
-                    color: task.dependency!.isCompleted ? Colors.green : Colors.blue,
-                    size: 20,
-                  ),
-                IconButton(
-                  onPressed: () => widget.onEdit(globalIndex),
-                  icon: const Icon(Icons.edit),
-                  iconSize: 20,
-                ),
-                Checkbox(
-                  value: task.isCompleted,
-                  onChanged: (value) => widget.onToggle(globalIndex, value),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showTaskDialog(Task task, int index) {
-    showDialog(
-      context: context,
-      builder: (context) => TaskBoxWidget(
-        task: task,
-        onEdit: () => widget.onEdit(index),
-        onStart: () => widget.onStart(index),
-        onDelete: () => _deleteTask(index),
-        onClose: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
-
-  void _deleteTask(int index) async {
-    setState(() {
-      deletedTask = widget.tasks[index];
-      deletedIndex = index;
-      widget.tasks.removeAt(index);
-    });
-    Navigator.of(context).pop();
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-          SnackBar(
-            content: const Text("Deleted accidentally?"),
-            action: SnackBarAction(
-              label: "Undo",
-              onPressed: () {
-                setState(() {
-                  widget.tasks.insert(deletedIndex!, deletedTask!);
-                });
-              },
-            ),
-          ),
-        )
-        .closed
-        .then((value) async {
-          if (value != SnackBarClosedReason.action) {
-            await TaskStorage.saveTasks(widget.tasks);
-          }
-        });
+    return grouped.entries.toList()
+      ..sort((a, b) {
+        if (a.key == 'No Deadline') return -1;
+        if (b.key == 'No Deadline') return 1;
+        return a.key.compareTo(b.key);
+      });
   }
 
   void _showTaskDetails(Task task, int index) {
@@ -184,7 +71,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
             deletedIndex = index;
             widget.tasks.removeAt(index);
           });
-          Navigator.of(context).pop(); // Close the dialog after deletion
+          Navigator.of(context).pop();
 
           ScaffoldMessenger.of(context)
               .showSnackBar(
@@ -213,12 +100,67 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
-  void _toggleTaskSelection(int index) {
-    if (widget.selectedIndexes.contains(index)) {
-      widget.onSelectionRemoved(index);
-    } else {
-      widget.onSelectionAdded(index);
-    }
+  Widget _buildTaskTile(Task task, int index) {
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              setState(() {
+                widget.tasks.removeAt(index);
+              });
+              await TaskStorage.saveTasks(widget.tasks);
+            },
+            icon: Icons.delete,
+            foregroundColor: Colors.red,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        child: Card(
+          elevation: 0,
+          color: widget.selectedIndexes.contains(index)
+              ? Colors.grey.withOpacity(0.5)
+              : task.color.withOpacity(0.2),
+          margin: const EdgeInsets.all(0),
+          child: ListTile(
+            onTap: () => _showTaskDetails(task, index),
+            title: Text(
+              task.title,
+              style: TextStyle(
+                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            subtitle: Text(
+              task.description.length > 30
+                  ? '${task.description.substring(0, 30)}...'
+                  : task.description,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (task.dependency != null)
+                  Icon(
+                    Icons.link,
+                    color: task.dependency!.isCompleted ? Colors.green : Colors.blue,
+                  ),
+                IconButton(
+                  onPressed: () => widget.onEdit(index),
+                  icon: const Icon(Icons.edit),
+                ),
+                const SizedBox(width: 5),
+                Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (value) => widget.onToggle(index, value),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -226,132 +168,35 @@ class _TaskListScreenState extends State<TaskListScreen> {
     final groupedTasks = _groupTasksByDeadline();
     
     return ListView.builder(
+      itemCount: groupedTasks.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: groupedTasks.length,
       itemBuilder: (context, sectionIndex) {
-        final deadline = groupedTasks.keys.elementAt(sectionIndex);
-        final tasksInSection = groupedTasks[deadline]!;
+        final section = groupedTasks[sectionIndex];
+        final isExpanded = _expandedSections[section.key] ?? true;
         
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkWell(
+            ListTile(
               onTap: () {
                 setState(() {
-                  sectionExpanded[deadline] = !(sectionExpanded[deadline] ?? true);
+                  _expandedSections[section.key] = !isExpanded;
                 });
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Icon(
-                      (sectionExpanded[deadline] ?? true)
-                          ? Icons.expand_more
-                          : Icons.chevron_right,
-                    ),
-                    Text(
-                      '$deadline (${tasksInSection.length})',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
+              leading: Icon(
+                isExpanded ? Icons.expand_more : Icons.chevron_right,
+              ),
+              title: Text(
+                '${section.key} (${section.value.length})',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            if (sectionExpanded[deadline] ?? true)
-              ...tasksInSection.map((task) {
-                final globalIndex = widget.tasks.indexOf(task);
-                return Slidable(
-                  endActionPane: ActionPane(
-                    motion: const StretchMotion(),
-                    children: [
-                      SlidableAction(
-                        onPressed: (context) async {
-                          setState(() {
-                            widget.tasks.removeAt(globalIndex);
-                          });
-                          await TaskStorage.saveTasks(widget.tasks);
-                        },
-                        icon: Icons.delete,
-                        foregroundColor: Colors.red,
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    child: Card(
-                      elevation: 0,
-                      color: widget.selectedIndexes.contains(globalIndex)
-                          ? Colors.grey.withOpacity(0.5)
-                          : task.color.withOpacity(0.2),
-                      margin: const EdgeInsets.all(0),
-                      child: ListTile(
-                        onTap: () {
-                          if (widget.selectedIndexes.isEmpty) {
-                            _showTaskDetails(task, globalIndex);
-                          } else {
-                            _toggleTaskSelection(globalIndex);
-                          }
-                        },
-                        onLongPress: () => _toggleTaskSelection(globalIndex),
-                        title: Text(
-                          task.title,
-                          style: TextStyle(
-                            decoration:
-                                task.isCompleted ? TextDecoration.lineThrough : null,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              task.description.length > 30
-                                  ? '${task.description.substring(0, 30)}...'
-                                  : task.description,
-                            ),
-                            Row(children: [
-                              if (task.hasDeadline)
-                                Text(
-                                    'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
-                              if (task.hasDeadline &&
-                                  task.deadline.isBefore(DateTime.now()) &&
-                                  !task.isCompleted)
-                                const Icon(
-                                  Icons.warning,
-                                  color: Colors.red,
-                                ),
-                            ]),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (task.dependency != null && !task.dependency!.isCompleted)
-                              const Icon(
-                                Icons.link,
-                                color: Colors.blue,
-                              ),
-                            if (task.dependency != null && task.dependency!.isCompleted)
-                              const Icon(
-                                Icons.link,
-                                color: Colors.green,
-                              ),
-                            IconButton(
-                              onPressed: () => widget.onEdit(globalIndex),
-                              icon: const Icon(Icons.edit),
-                            ),
-                            const SizedBox(width: 5),
-                            Checkbox(
-                              value: task.isCompleted,
-                              onChanged: (value) => widget.onToggle(globalIndex, value),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+            if (isExpanded)
+              ...section.value.map((task) {
+                final index = widget.tasks.indexOf(task);
+                return _buildTaskTile(task, index);
+              }),
           ],
         );
       },
