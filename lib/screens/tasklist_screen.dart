@@ -142,9 +142,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       Row(children: [
                         if (task.hasDeadline)
                           Text(
-                              'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
+                              'Deadline: ${MyDateUtils.getFormattedDate(task.deadline!)}'),
                         if (task.hasDeadline &&
-                            task.deadline.isBefore(DateTime.now()) &&
+                            task.deadline!.isBefore(DateTime.now()) &&
                             !task.isCompleted)
                           const Icon(
                             Icons.warning,

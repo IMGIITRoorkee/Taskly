@@ -61,7 +61,7 @@ class TaskBoxWidget extends StatelessWidget {
                             const Icon(Icons.calendar_today, size: 18),
                             const SizedBox(width: 8),
                             Text(
-                              'Deadline: ${task.deadline.day}/${task.deadline.month}/${task.deadline.year}',
+                              'Deadline: ${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ],
@@ -106,7 +106,7 @@ class TaskBoxWidget extends StatelessWidget {
                                 openGoogleCalendar(
                                   title: task.title,
                                   description: task.description,
-                                  deadline: task.deadline,
+                                  deadline: task.deadline!,
                                 );
                               },
                               icon: SvgPicture.asset(

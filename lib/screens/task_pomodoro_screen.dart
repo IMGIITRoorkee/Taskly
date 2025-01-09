@@ -123,10 +123,12 @@ class _TaskPomodoroScreenState extends State<TaskPomodoroScreen> {
                   maxLines: 5,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: Text(
-                  MyDateUtils.getFormattedDate(widget.task.deadline),
-                  style: const TextStyle(color: Colors.red),
-                ),
+                trailing: widget.task.hasDeadline
+                    ? Text(
+                        MyDateUtils.getFormattedDate(widget.task.deadline!),
+                        style: const TextStyle(color: Colors.red),
+                      )
+                    : null,
               ),
             ),
           ),
