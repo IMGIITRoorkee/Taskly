@@ -9,6 +9,9 @@ class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
   final Function(int) onEdit;
+  final Set<int> selectedIndexes;
+  final Function(int) onSelectionAdded;
+  final Function(int) onSelectionRemoved;
   final Function(int) onStart;
 
   const TaskListScreen({
@@ -16,6 +19,9 @@ class TaskListScreen extends StatefulWidget {
     required this.tasks,
     required this.onToggle,
     required this.onEdit,
+    required this.selectedIndexes,
+    required this.onSelectionAdded,
+    required this.onSelectionRemoved,
     required this.onStart,
   });
 
@@ -165,6 +171,56 @@ class _TaskListScreenState extends State<TaskListScreen> {
         });
   }
 
+  void _showTaskDetails(Task task, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => TaskBoxWidget(
+        task: task,
+        onEdit: () => widget.onEdit(index),
+        onStart: () => widget.onStart(index),
+        onDelete: () async {
+          setState(() {
+            deletedTask = widget.tasks[index];
+            deletedIndex = index;
+            widget.tasks.removeAt(index);
+          });
+          Navigator.of(context).pop(); // Close the dialog after deletion
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+                SnackBar(
+                  content: const Text("Deleted accidentally?"),
+                  action: SnackBarAction(
+                    label: "Undo",
+                    onPressed: () {
+                      widget.tasks.insert(deletedIndex!, deletedTask!);
+                      setState(() {});
+                    },
+                  ),
+                ),
+              )
+              .closed
+              .then(
+            (value) async {
+              if (value != SnackBarClosedReason.action) {
+                await TaskStorage.saveTasks(widget.tasks);
+              }
+            },
+          );
+        },
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    );
+  }
+
+  void _toggleTaskSelection(int index) {
+    if (widget.selectedIndexes.contains(index)) {
+      widget.onSelectionRemoved(index);
+    } else {
+      widget.onSelectionAdded(index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedTasks = _groupTasksByDeadline();
@@ -205,7 +261,96 @@ class _TaskListScreenState extends State<TaskListScreen> {
             if (sectionExpanded[deadline] ?? true)
               ...tasksInSection.map((task) {
                 final globalIndex = widget.tasks.indexOf(task);
-                return _buildTaskTile(task, globalIndex);
+                return Slidable(
+                  endActionPane: ActionPane(
+                    motion: const StretchMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (context) async {
+                          setState(() {
+                            widget.tasks.removeAt(globalIndex);
+                          });
+                          await TaskStorage.saveTasks(widget.tasks);
+                        },
+                        icon: Icons.delete,
+                        foregroundColor: Colors.red,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    child: Card(
+                      elevation: 0,
+                      color: widget.selectedIndexes.contains(globalIndex)
+                          ? Colors.grey.withOpacity(0.5)
+                          : task.color.withOpacity(0.2),
+                      margin: const EdgeInsets.all(0),
+                      child: ListTile(
+                        onTap: () {
+                          if (widget.selectedIndexes.isEmpty) {
+                            _showTaskDetails(task, globalIndex);
+                          } else {
+                            _toggleTaskSelection(globalIndex);
+                          }
+                        },
+                        onLongPress: () => _toggleTaskSelection(globalIndex),
+                        title: Text(
+                          task.title,
+                          style: TextStyle(
+                            decoration:
+                                task.isCompleted ? TextDecoration.lineThrough : null,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              task.description.length > 30
+                                  ? '${task.description.substring(0, 30)}...'
+                                  : task.description,
+                            ),
+                            Row(children: [
+                              if (task.hasDeadline)
+                                Text(
+                                    'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
+                              if (task.hasDeadline &&
+                                  task.deadline.isBefore(DateTime.now()) &&
+                                  !task.isCompleted)
+                                const Icon(
+                                  Icons.warning,
+                                  color: Colors.red,
+                                ),
+                            ]),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (task.dependency != null && !task.dependency!.isCompleted)
+                              const Icon(
+                                Icons.link,
+                                color: Colors.blue,
+                              ),
+                            if (task.dependency != null && task.dependency!.isCompleted)
+                              const Icon(
+                                Icons.link,
+                                color: Colors.green,
+                              ),
+                            IconButton(
+                              onPressed: () => widget.onEdit(globalIndex),
+                              icon: const Icon(Icons.edit),
+                            ),
+                            const SizedBox(width: 5),
+                            Checkbox(
+                              value: task.isCompleted,
+                              onChanged: (value) => widget.onToggle(globalIndex, value),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               }).toList(),
           ],
         );
