@@ -307,6 +307,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSubtaskChanged(int index, Task t) async {
+    tasks[index] = t;
+    setState(() {});
+    await TaskStorage.saveTasks(tasks);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -374,6 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSelectionAdded: _onSelectionAdded,
                   onSelectionRemoved: _onSelectionRemoved,
                   onStart: _onStartTask,
+                  onSubtaskChanged: _onSubtaskChanged,
                 ),
         ],
       ),

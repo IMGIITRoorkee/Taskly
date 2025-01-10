@@ -13,6 +13,7 @@ class TaskListScreen extends StatefulWidget {
   final Function(int) onSelectionAdded;
   final Function(int) onSelectionRemoved;
   final Function(int) onStart;
+  final Function(int, Task) onSubtaskChanged;
 
   const TaskListScreen({
     super.key,
@@ -23,6 +24,7 @@ class TaskListScreen extends StatefulWidget {
     required this.onSelectionAdded,
     required this.onSelectionRemoved,
     required this.onStart,
+    required this.onSubtaskChanged,
   });
 
   @override
@@ -33,9 +35,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
   int? deletedIndex;
   Task? deletedTask;
 
-  void _showTaskDetails(Task task, int index) {
-    showDialog(
+  void _showTaskDetails(Task task, int index) async {
+    bool? res = await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => TaskBoxWidget(
         task: task,
         onEdit: () => widget.onEdit(index),
@@ -70,9 +73,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
             },
           );
         },
-        onClose: () => Navigator.of(context).pop(),
       ),
     );
+    if (res != null && res) {
+      widget.onSubtaskChanged(index, task);
+    }
   }
 
   void _toggleTaskSelection(int index) {
