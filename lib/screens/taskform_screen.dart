@@ -35,7 +35,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Color selectedColor = Colors.blue;
   int? repeatInterval;
   late List<Task> _availableTasks;
-
   late List<Subtask> subtasks;
 
   bool isTitleListening = false;
