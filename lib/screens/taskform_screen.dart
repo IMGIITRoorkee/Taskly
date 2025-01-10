@@ -31,6 +31,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Task? selectedDependency;
   Color selectedColor = Colors.blue;
   int? repeatInterval;
+  late List<Task> _availableTasks;
+
 
   bool isTitleListening = false;
 
@@ -43,7 +45,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
     selectedDependency = widget.task?.dependency;
-    widget.availableTasks.remove(widget.task);
+    _availableTasks = List<Task>.from(widget.availableTasks);
+    if (widget.task != null) {
+      _availableTasks.removeWhere((task) => task.id == widget.task!.id);
+    }
     hasDeadline = widget.task?.hasDeadline ?? false;
     selectedColor = widget.task?.color ?? Colors.blue;
     _titleController.addListener(_onTitleChanged);
@@ -388,7 +393,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       value: null,
                       child: Text('None'),
                     ),
-                    ...widget.availableTasks.map((task) {
+                    ..._availableTasks.map((task) {
                       return DropdownMenuItem<String?>(
                         value: task.title, // Use title as the value
                         child: Text(task.title),
@@ -397,7 +402,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   ],
                   onChanged: (String? newTaskTitle) {
                     setState(() {
-                      selectedDependency = widget.availableTasks.firstWhere(
+                      selectedDependency = _availableTasks.firstWhere(
                         (task) => task.title == newTaskTitle,
                         orElse: () => null as Task,
                       );
