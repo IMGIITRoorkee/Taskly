@@ -5,14 +5,13 @@ import 'package:taskly/providers/theme_provider.dart';
 import 'package:taskly/screens/home_screen.dart';
 import 'package:taskly/screens/intro_screen.dart';
 import 'package:taskly/screens/splash_screen.dart';
-import 'package:taskly/service/email_service.dart';
 import 'package:taskly/service/local_db_service.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:workmanager/workmanager.dart';
 
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    await EmailService.sendMessage();
+    //await EmailService.sendMessage();
     return Future.value(true);
   });
 }

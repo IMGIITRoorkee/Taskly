@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/service/local_db_service.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/utils/date_utils.dart';
@@ -38,12 +39,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   int? reminder;
 
   bool isTitleListening = false;
+  String? userEmail;
 
   List<String> _filteredSuggestions = [];
 
   @override
   void initState() {
     super.initState();
+    _fetchSharedPref();
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
@@ -65,6 +68,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
     if (hasDeadline) deadline = widget.task?.deadline;
     reminder = widget.task?.reminder;
+  }
+
+  void _fetchSharedPref() async {
+    userEmail = await LocalDbService.getUserEmail();
+    setState(() {});
   }
 
   @override
@@ -351,27 +359,28 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         ),
       ),
       const Spacing(),
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Reminder"),
-          subtitle: const Text("Add an email reminder for your task"),
-          trailing: reminderTrailing,
-          enabled: deadline != null && (reminder == null),
-          onTap: () async {
-            int? res = await showDialog(
-              context: context,
-              builder: (context) =>
-                  ReminderIntervalCard(reminderInterval: reminder),
-            );
+      if (userEmail != null)
+        Card(
+          margin: const EdgeInsets.all(0),
+          child: ListTile(
+            title: const Text("Reminder"),
+            subtitle: const Text("Add an email reminder for your task"),
+            trailing: reminderTrailing,
+            enabled: deadline != null && (reminder == null),
+            onTap: () async {
+              int? res = await showDialog(
+                context: context,
+                builder: (context) =>
+                    ReminderIntervalCard(reminderInterval: reminder),
+              );
 
-            if (res != null) {
-              reminder = res;
-              setState(() {});
-            }
-          },
+              if (res != null) {
+                reminder = res;
+                setState(() {});
+              }
+            },
+          ),
         ),
-      ),
     ];
   }
 
