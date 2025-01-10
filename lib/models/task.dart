@@ -72,6 +72,9 @@ class Task {
   void toggleCompletion() {
     if (!isRecurring) {
       isCompleted = !isCompleted;
+      for (var element in subtasks) {
+        element.isCompleted = true;
+      }
       return;
     }
 
