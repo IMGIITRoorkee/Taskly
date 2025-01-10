@@ -9,6 +9,9 @@ class EmailService {
 
   static Future sendMessage(
       String recipient, String taskName, String desc, String due) async {
+    if (kDebugMode) {
+      print("send message called");
+    }
     final smtpServer = gmail(username, password);
 
     String emailTemplate = '''

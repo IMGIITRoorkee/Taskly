@@ -406,11 +406,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               delay = Duration.zero;
             }
 
-            Workmanager().registerOneOffTask(
-              task.id,
-              "sendEmailReminder",
-              //initialDelay: remindertime.difference(DateTime.now()),
-            );
+            Workmanager().registerOneOffTask(task.id, "sendEmailReminder",
+                initialDelay: remindertime.difference(DateTime.now()),
+                inputData: {
+                  "recipient": userEmail,
+                  "title": task.title,
+                  "desc": task.description,
+                  "deadline": MyDateUtils.getFormattedDate(task.deadline!),
+                });
           }
 
           Fluttertoast.showToast(
