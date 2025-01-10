@@ -85,13 +85,22 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return ReorderableListView.builder(
+      onReorder: (oldIndex, newIndex) {
+        if (oldIndex < newIndex) {
+          newIndex -= 1;
+        }
+        final task = widget.tasks.removeAt(oldIndex);
+        widget.tasks.insert(newIndex, task);
+        TaskStorage.saveTasks(widget.tasks);
+      },
       itemCount: widget.tasks.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final task = widget.tasks[index];
         return Slidable(
+          key: ValueKey(task),
           endActionPane: ActionPane(
             motion: const StretchMotion(),
             children: [
