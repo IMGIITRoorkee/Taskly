@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:taskly/models/subtask.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
+import 'package:taskly/widgets/spacing.dart';
+import 'package:taskly/widgets/subtask_add_card.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -31,6 +34,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Task? selectedDependency;
   Color selectedColor = Colors.blue;
   int? repeatInterval;
+  late List<Subtask> subtasks;
 
   bool isTitleListening = false;
 
@@ -56,6 +60,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
+    print(widget.task?.subtasks);
+    subtasks = widget.task?.subtasks ?? [];
   }
 
   @override
@@ -268,6 +274,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       repeatTrailing = const Icon(Icons.repeat_rounded);
     }
 
+    Widget subtaskTrailing;
+    if (subtasks.isEmpty) {
+      subtaskTrailing = const Icon(Icons.subdirectory_arrow_left_rounded);
+    } else {
+      subtaskTrailing = Text("${subtasks.length}");
+    }
+
     return [
       Card(
         margin: const EdgeInsets.all(0),
@@ -334,6 +347,25 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           },
         ),
       ),
+      const Spacing(),
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Subtasks"),
+          subtitle: const Text("Add subtasks to your task"),
+          trailing: subtaskTrailing,
+          onTap: () async {
+            List<Subtask>? sub = await showModalBottomSheet(
+              context: context,
+              builder: (context) => SubtaskAddCard(task: widget.task),
+            );
+            if (sub != null) {
+              subtasks = sub;
+              setState(() {});
+            }
+          },
+        ),
+      ),
     ];
   }
 
@@ -347,6 +379,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
+            subtasks: subtasks,
           );
           Fluttertoast.showToast(
               msg: editing

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:taskly/models/subtask.dart';
 
 class Task {
@@ -27,7 +28,7 @@ class Task {
     String? id,
     List<Subtask>? subtasks,
   })  : id = id ?? DateTime.now().microsecondsSinceEpoch.toString(),
-        subtasks = [];
+        subtasks = subtasks ?? [];
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -58,7 +59,7 @@ class Task {
       title: json['title'],
       description: json['description'],
       isCompleted: json['isCompleted'],
-      deadline: DateTime.parse(json['deadline']),
+      deadline: DateTime.tryParse(json['deadline'] ?? ""),
       dependency:
           json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
@@ -82,6 +83,6 @@ class Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
+    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, color: $color, recurringDays: $recurringDays, subtasks: $subtasks)';
   }
 }
