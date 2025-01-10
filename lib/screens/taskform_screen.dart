@@ -5,7 +5,9 @@ import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/widgets/reminder_interval_card.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
+import 'package:taskly/widgets/spacing.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -32,7 +34,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Color selectedColor = Colors.blue;
   int? repeatInterval;
   late List<Task> _availableTasks;
-
+  int? reminder;
 
   bool isTitleListening = false;
 
@@ -61,6 +63,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
+    reminder = widget.task?.reminder;
   }
 
   @override
@@ -273,6 +276,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       repeatTrailing = const Icon(Icons.repeat_rounded);
     }
 
+    Widget reminderTrailing;
+    if (reminder != null) {
+      reminderTrailing = Text("Before ${reminder}hrs");
+    } else {
+      reminderTrailing = Icon(Icons.calendar_month_outlined);
+    }
+
     return [
       Card(
         margin: const EdgeInsets.all(0),
@@ -339,6 +349,27 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           },
         ),
       ),
+      const Spacing(),
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Reminder"),
+          subtitle: const Text("Add an email reminder for your task"),
+          trailing: reminderTrailing,
+          onTap: () async {
+            int? res = await showDialog(
+              context: context,
+              builder: (context) =>
+                  ReminderIntervalCard(reminderInterval: reminder),
+            );
+
+            if (res != null) {
+              reminder = res;
+              setState(() {});
+            }
+          },
+        ),
+      ),
     ];
   }
 
@@ -352,6 +383,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
+            reminder: reminder,
           );
           Fluttertoast.showToast(
               msg: editing
