@@ -54,6 +54,8 @@ dependencies:
   flutter_confetti: ^0.3.4
   choice: ^2.3.2
   mailer: ^6.4.0
+  workmanager: ^0.5.2
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +83,7 @@ flutter:
   assets:
     - assets/svg/
     - assets/sounds/
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

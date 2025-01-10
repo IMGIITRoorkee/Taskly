@@ -1,31 +1,43 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
 
 class EmailService {
-  static String username = 'somye.cool15@gmail.com';
-  static String password = 'keNfog-4zerqa-hytnov';
+  static String username = dotenv.env['username'] ?? "";
+  static String password = dotenv.env['password'] ?? "";
 
-  static void sendMessage() async {
+  static Future sendMessage(
+      String recipient, String taskName, String desc, String due) async {
     final smtpServer = gmail(username, password);
-    // Use the SmtpServer class to configure an SMTP server:
-    // final smtpServer = SmtpServer('smtp.domain.com');
-    // See the named arguments of SmtpServer for further configuration
-    // options.
 
-    // Create our message.
+    String emailTemplate = '''
+<!DOCTYPE html>
+<html>
+<body>
+  <p>Hello</p>
+  <p>This is a friendly reminder about your upcoming task:</p>
+  <p><b>Task Title:</b> $taskName</p>
+  <p><b>Description:</b> $desc</p>
+  <p><b>Due Date:</b> $due</p>
+  <p>Please make sure to complete the task by the due date to stay on track.</p>
+  <p>If you have any questions or need further assistance, feel free to reach out.</p>
+  <p>Best regards,<br>Taskly Team</p>
+</body>
+</html>
+''';
+
     final message = Message()
-      ..from = Address(username, 'Your name')
-      ..recipients.add('anyone.mahajan@gmail.com')
-      ..subject = 'Test Dart Mailer library :: 😀 :: ${DateTime.now()}'
-      ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-      ..html = "<h1>Test</h1>\n<p>Hey! Here's some HTML content</p>";
+      ..from = Address(username, 'Taskly')
+      ..recipients.add(recipient)
+      ..subject = 'Reminder for your task: $taskName'
+      ..html = emailTemplate;
 
     try {
-      final sendReport = await send(message, smtpServer);
+      await send(message, smtpServer);
     } on MailerException catch (e) {
-      print('Message not sent.');
-      for (var p in e.problems) {
-        print('Problem: ${p.code}: ${p.msg}');
+      if (kDebugMode) {
+        print('Message not sent. ${e.message}');
       }
     }
   }

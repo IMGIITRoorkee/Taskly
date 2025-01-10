@@ -8,6 +8,7 @@ import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/reminder_interval_card.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
 import 'package:taskly/widgets/spacing.dart';
+import 'package:workmanager/workmanager.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -280,7 +281,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     if (reminder != null) {
       reminderTrailing = Text("Before ${reminder}hrs");
     } else {
-      reminderTrailing = Icon(Icons.calendar_month_outlined);
+      reminderTrailing = const Icon(Icons.calendar_month_outlined);
     }
 
     return [
@@ -356,6 +357,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           title: const Text("Reminder"),
           subtitle: const Text("Add an email reminder for your task"),
           trailing: reminderTrailing,
+          enabled: deadline != null && (reminder == null),
           onTap: () async {
             int? res = await showDialog(
               context: context,
@@ -385,6 +387,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             color: selectedColor,
             reminder: reminder,
           );
+
+          if (reminder != null && deadline != null) {
+            DateTime remindertime =
+                task.deadline!.subtract(Duration(hours: reminder!));
+            Duration delay = remindertime.difference(DateTime.now());
+
+            if (delay.isNegative) {
+              delay = Duration.zero;
+            }
+
+            Workmanager().registerOneOffTask(
+              task.id,
+              "sendEmailReminder",
+              //initialDelay: remindertime.difference(DateTime.now()),
+            );
+          }
+
           Fluttertoast.showToast(
               msg: editing
                   ? "Task Successfully Edited!"
