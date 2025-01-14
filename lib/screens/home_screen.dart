@@ -335,7 +335,6 @@ Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
           title: row[0].toString(),
           description: row[1].toString(),
           isCompleted: row[2].toString().toLowerCase() == 'true',
-          hasDeadline: row[3].toString().toLowerCase() == 'true',
           deadline: deadline ?? DateTime.now(),
         );
         importedTasks.add(task);
