@@ -17,16 +17,16 @@ class _KudosDetailsState extends State<KudosDetails> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Stack(
         children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),  
-              child: Column(
-                children: [
-                  Text("Kudos: ${widget.kudos.score}", style: const TextStyle(fontSize: 24)),
-                  ListView.builder(
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text("Kudos: ${widget.kudos.score}",
+                    style: const TextStyle(fontSize: 24)),
+                Expanded(
+                  child: ListView.builder(
                     itemCount: widget.kudos.history.length,
                     scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
                     itemBuilder: (context, index) {
                       return ListTile(
                         title: Text(widget.kudos.history[index][0]),
@@ -34,8 +34,8 @@ class _KudosDetailsState extends State<KudosDetails> {
                       );
                     },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 

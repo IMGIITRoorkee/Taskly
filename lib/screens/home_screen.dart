@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
           var days_diff =
-              tasks[index].deadline.difference(DateTime.now()).inDays + 1;
+              tasks[index].deadline!.difference(DateTime.now()).inDays + 1;
           if (days_diff == 0) {
             days_diff = 1;
           }
@@ -267,7 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
         task.description,
         task.isCompleted,
         task.hasDeadline,
-        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+        task.hasDeadline
+            ? '${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}'
+            : null,
       ]);
     }
 
