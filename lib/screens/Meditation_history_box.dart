@@ -10,7 +10,8 @@ class MeditationHistory extends StatefulWidget {
 }
 
 class _MeditationHistoryState extends State<MeditationHistory> {
-  Future<List<Map<String, dynamic>>>? history = MeditationHistoryStorage.getHistory();
+  Future<List<Map<String, dynamic>>>? history =
+      MeditationHistoryStorage.getHistory();
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,8 @@ class _MeditationHistoryState extends State<MeditationHistory> {
         } else {
           var meditationHistory = snapshot.data;
           return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             backgroundColor: Colors.black,
             child: Stack(
               children: [
@@ -40,6 +42,16 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                             color: Colors.white,
                           ),
                         ),
+                        if (meditationHistory!.isNotEmpty)
+                          TextButton(
+                            onPressed: () async {
+                              await MeditationHistoryStorage.clearHistory();
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text("Clear all"),
+                          ),
                         const SizedBox(height: 16),
                         ListView.builder(
                           itemCount: meditationHistory?.length,
@@ -61,7 +73,7 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                               ),
                               child: ListTile(
                                 title: Text(
-                                  "${meditationHistory?[index]["time"]} minutes",
+                                  "${meditationHistory[index]["time"]} minutes",
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -69,7 +81,7 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  "${meditationHistory?[index]["diff"]} seconds",
+                                  "${meditationHistory[index]["diff"]} seconds",
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w500,
@@ -77,7 +89,7 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                                   ),
                                 ),
                                 trailing: Text(
-                                  meditationHistory?[index]["date"],
+                                  meditationHistory[index]["date"],
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey[300],
