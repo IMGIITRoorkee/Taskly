@@ -11,10 +11,10 @@ String stayFocused(int min) => "Stay focused for $min minutes";
 String relax(int min) => "Relax for $min minutes";
 
 //Meditation Completion
-String ExtraMeditation(int selectedMinutes, int extraSeconds) =>
+String extraMeditation(int selectedMinutes, int extraSeconds) =>
     "Great job! You meditated for $selectedMinutes minutes and $extraSeconds extra seconds";
-String MeditationComplete(int minutesMeditated, int secondsMeditated) =>
+String meditationComplete(int minutesMeditated, int secondsMeditated) =>
     "Session ended. You meditated for $minutesMeditated minutes and $secondsMeditated seconds";
-String MeditationCompleteKudos (int minute) =>"Complete a $minute minute meditation session";
-String MeditationCompleteKudosExtra (int minute) =>"$minute minutes of extra meditation.";
-String MeditationCompleteKudosLess (int minute) =>"$minute minutes of meditation missed.";
+String meditationCompleteKudos (int minute) =>"Complete a $minute minute meditation session";
+String meditationCompleteKudosExtra (int minute) =>"$minute minutes of extra meditation.";
+String meditationCompleteKudosLess (int minute) =>"$minute minutes of meditation missed.";
