@@ -45,7 +45,8 @@ class Task {
       title: json['title'],
       description: json['description'],
       isCompleted: json['isCompleted'],
-      deadline: DateTime.parse(json['deadline']),
+      deadline:
+          json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
       dependency:
           json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
