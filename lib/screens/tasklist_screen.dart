@@ -102,6 +102,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   Widget _buildTaskTile(Task task, int index) {
     return Slidable(
+      key: ValueKey(task),
       endActionPane: ActionPane(
         motion: const StretchMotion(),
         children: [
@@ -163,6 +164,31 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
+  Future<void> _onReorder(String deadline, int oldIndex, int newIndex) async {
+    setState(() {
+      final tasks = widget.tasks;
+      final deadlineTasks = tasks.where((task) {
+        if (!task.hasDeadline && deadline == 'No Deadline') return true;
+        return task.hasDeadline && 
+               MyDateUtils.getFormattedDate(task.deadline!) == deadline;
+      }).toList();
+
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+
+      final task = deadlineTasks[oldIndex];
+      final oldGlobalIndex = tasks.indexOf(task);
+      tasks.removeAt(oldGlobalIndex);
+
+      final targetTask = deadlineTasks[newIndex];
+      final newGlobalIndex = tasks.indexOf(targetTask);
+      tasks.insert(newGlobalIndex, task);
+    });
+
+    await TaskStorage.saveTasks(widget.tasks);
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedTasks = _groupTasksByDeadline();
@@ -193,10 +219,18 @@ class _TaskListScreenState extends State<TaskListScreen> {
               ),
             ),
             if (isExpanded)
-              ...section.value.map((task) {
-                final index = widget.tasks.indexOf(task);
-                return _buildTaskTile(task, index);
-              }),
+              ReorderableListView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                onReorder: (oldIndex, newIndex) => 
+                    _onReorder(section.key, oldIndex, newIndex),
+                children: [
+                  ...section.value.map((task) {
+                    final index = widget.tasks.indexOf(task);
+                    return _buildTaskTile(task, index);
+                  }),
+                ],
+              ),
           ],
         );
       },
