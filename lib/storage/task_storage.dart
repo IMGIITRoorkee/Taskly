@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskly/models/task.dart';
 
@@ -20,5 +21,19 @@ class TaskStorage {
     return encodedTasks
         .map((encodedTask) => Task.fromJson(jsonDecode(encodedTask)))
         .toList();
+  }
+}
+
+class DefaultTaskColorStorage {
+  static const String _defaultColorKey = 'defaultColor';
+
+  static Future<void> saveDefaultColor(int color) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_defaultColorKey, color);
+  }
+
+  static Future<Color> loadDefaultColor() async {
+    final prefs = await SharedPreferences.getInstance();
+    return Color(prefs.getInt(_defaultColorKey)?? Colors.blue as int);
   }
 }

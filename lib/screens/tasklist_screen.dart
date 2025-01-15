@@ -30,8 +30,33 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  final Map<String, bool> _expandedSections = {};
   int? deletedIndex;
   Task? deletedTask;
+
+  List<MapEntry<String, List<Task>>> _groupTasksByDeadline() {
+    final Map<String, List<Task>> grouped = {
+      'No Deadline': [],
+    };
+    
+    for (var task in widget.tasks) {
+      if (!task.hasDeadline) {
+        grouped['No Deadline']!.add(task);
+        continue;
+      }
+      
+      final deadline = MyDateUtils.getFormattedDate(task.deadline!);
+      grouped.putIfAbsent(deadline, () => []);
+      grouped[deadline]!.add(task);
+    }
+    
+    return grouped.entries.toList()
+      ..sort((a, b) {
+        if (a.key == 'No Deadline') return -1;
+        if (b.key == 'No Deadline') return 1;
+        return a.key.compareTo(b.key);
+      });
+  }
 
   void _showTaskDetails(Task task, int index) {
     showDialog(
@@ -46,7 +71,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
             deletedIndex = index;
             widget.tasks.removeAt(index);
           });
-          Navigator.of(context).pop(); // Close the dialog after deletion
+          Navigator.of(context).pop();
 
           ScaffoldMessenger.of(context)
               .showSnackBar(
@@ -75,120 +100,104 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
-  void _toggleTaskSelection(int index) {
-    if (widget.selectedIndexes.contains(index)) {
-      widget.onSelectionRemoved(index);
-    } else {
-      widget.onSelectionAdded(index);
-    }
+  Widget _buildTaskTile(Task task, int index) {
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              setState(() {
+                widget.tasks.removeAt(index);
+              });
+              await TaskStorage.saveTasks(widget.tasks);
+            },
+            icon: Icons.delete,
+            foregroundColor: Colors.red,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        child: Card(
+          elevation: 0,
+          color: widget.selectedIndexes.contains(index)
+              ? Colors.grey.withOpacity(0.5)
+              : task.color.withOpacity(0.2),
+          margin: const EdgeInsets.all(0),
+          child: ListTile(
+            onTap: () => _showTaskDetails(task, index),
+            title: Text(
+              task.title,
+              style: TextStyle(
+                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            subtitle: Text(
+              task.description.length > 30
+                  ? '${task.description.substring(0, 30)}...'
+                  : task.description,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (task.dependency != null)
+                  Icon(
+                    Icons.link,
+                    color: task.dependency!.isCompleted ? Colors.green : Colors.blue,
+                  ),
+                IconButton(
+                  onPressed: () => widget.onEdit(index),
+                  icon: const Icon(Icons.edit),
+                ),
+                const SizedBox(width: 5),
+                Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (value) => widget.onToggle(index, value),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ReorderableListView.builder(
-      onReorder: (oldIndex, newIndex) {
-        if (oldIndex < newIndex) {
-          newIndex -= 1;
-        }
-        final task = widget.tasks.removeAt(oldIndex);
-        widget.tasks.insert(newIndex, task);
-        TaskStorage.saveTasks(widget.tasks);
-      },
-      itemCount: widget.tasks.length,
+    final groupedTasks = _groupTasksByDeadline();
+    
+    return ListView.builder(
+      itemCount: groupedTasks.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        final task = widget.tasks[index];
-        return Slidable(
-          key: ValueKey(task),
-          endActionPane: ActionPane(
-            motion: const StretchMotion(),
-            children: [
-              SlidableAction(
-                onPressed: (context) async {
-                  setState(() {
-                    widget.tasks.removeAt(index);
-                  });
-                  await TaskStorage.saveTasks(widget.tasks);
-                },
-                icon: Icons.delete,
-                foregroundColor: Colors.red,
+      itemBuilder: (context, sectionIndex) {
+        final section = groupedTasks[sectionIndex];
+        final isExpanded = _expandedSections[section.key] ?? true;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              onTap: () {
+                setState(() {
+                  _expandedSections[section.key] = !isExpanded;
+                });
+              },
+              leading: Icon(
+                isExpanded ? Icons.expand_more : Icons.chevron_right,
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-            child: Card(
-              elevation: 0,
-              color: widget.selectedIndexes.contains(index)
-                  ? Colors.grey.withOpacity(0.5)
-                  : task.color.withOpacity(0.2),
-              margin: const EdgeInsets.all(0),
-              child: ListTile(
-                onTap: () {
-                  if (widget.selectedIndexes.isEmpty) {
-                    _showTaskDetails(task, index);
-                  } else {
-                    _toggleTaskSelection(index);
-                  }
-                },
-                onLongPress: () => _toggleTaskSelection(index),
-                title: Text(
-                  task.title,
-                  style: TextStyle(
-                    decoration:
-                        task.isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.description.length > 30
-                            ? '${task.description.substring(0, 30)}...'
-                            : task.description,
-                      ),
-                      Row(children: [
-                        if (task.hasDeadline)
-                          Text(
-                              'Deadline: ${MyDateUtils.getFormattedDate(task.deadline!)}'),
-                        if (task.hasDeadline &&
-                            task.deadline!.isBefore(DateTime.now()) &&
-                            !task.isCompleted)
-                          const Icon(
-                            Icons.warning,
-                            color: Colors.red,
-                          ),
-                      ]),
-                    ]),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (task.dependency != null &&
-                        !task.dependency!.isCompleted)
-                      const Icon(
-                        Icons.link,
-                        color: Colors.blue,
-                      ),
-                    if (task.dependency != null && task.dependency!.isCompleted)
-                      const Icon(
-                        Icons.link,
-                        color: Colors.green,
-                      ),
-                    IconButton(
-                      onPressed: () => widget.onEdit(index),
-                      icon: const Icon(Icons.edit),
-                    ),
-                    const SizedBox(width: 5),
-                    Checkbox(
-                      value: task.isCompleted,
-                      onChanged: (value) => widget.onToggle(index, value),
-                    ),
-                  ],
-                ),
+              title: Text(
+                '${section.key} (${section.value.length})',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-          ),
+            if (isExpanded)
+              ...section.value.map((task) {
+                final index = widget.tasks.indexOf(task);
+                return _buildTaskTile(task, index);
+              }),
+          ],
         );
       },
     );
