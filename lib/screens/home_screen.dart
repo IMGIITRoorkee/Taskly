@@ -14,6 +14,7 @@ import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
+import 'package:taskly/widgets/email_reminder_card.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 import 'dart:io';
@@ -189,6 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
         showtip = !showtip;
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
+      } else if (option == TaskOption.emailReminders) {
+        showDialog(
+            context: context, builder: (context) => const EmailReminderCard());
       }
     });
     void _editTask(int index) async {
@@ -346,6 +350,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const PopupMenuItem(
                   value: TaskOption.launchMeditationScreen,
                   child: Text("Meditate"),
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.emailReminders,
+                  child: Text("Email Reminders"),
                 ),
               ];
             },

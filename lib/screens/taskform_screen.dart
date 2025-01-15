@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/service/local_db_service.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/widgets/reminder_interval_card.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
+import 'package:taskly/widgets/spacing.dart';
+import 'package:workmanager/workmanager.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -32,15 +36,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Color selectedColor = Colors.blue;
   int? repeatInterval;
   late List<Task> _availableTasks;
-
+  int? reminder;
 
   bool isTitleListening = false;
+  String? userEmail;
 
   List<String> _filteredSuggestions = [];
 
   @override
   void initState() {
     super.initState();
+    _fetchSharedPref();
     editing = widget.task != null;
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
@@ -61,6 +67,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
+    reminder = widget.task?.reminder;
+  }
+
+  void _fetchSharedPref() async {
+    userEmail = await LocalDbService.getUserEmail();
+    setState(() {});
   }
 
   @override
@@ -273,6 +285,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       repeatTrailing = const Icon(Icons.repeat_rounded);
     }
 
+    Widget reminderTrailing;
+    if (reminder != null) {
+      reminderTrailing = Text("Before ${reminder}hrs");
+    } else {
+      reminderTrailing = const Icon(Icons.calendar_month_outlined);
+    }
+
     return [
       Card(
         margin: const EdgeInsets.all(0),
@@ -339,6 +358,29 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           },
         ),
       ),
+      const Spacing(),
+      if (userEmail != null)
+        Card(
+          margin: const EdgeInsets.all(0),
+          child: ListTile(
+            title: const Text("Reminder"),
+            subtitle: const Text("Add an email reminder for your task"),
+            trailing: reminderTrailing,
+            enabled: deadline != null && (reminder == null),
+            onTap: () async {
+              int? res = await showDialog(
+                context: context,
+                builder: (context) =>
+                    ReminderIntervalCard(reminderInterval: reminder),
+              );
+
+              if (res != null) {
+                reminder = res;
+                setState(() {});
+              }
+            },
+          ),
+        ),
     ];
   }
 
@@ -352,7 +394,28 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
+            reminder: reminder,
           );
+
+          if (reminder != null && deadline != null) {
+            DateTime remindertime =
+                task.deadline!.subtract(Duration(hours: reminder!));
+            Duration delay = remindertime.difference(DateTime.now());
+
+            if (delay.isNegative) {
+              delay = Duration.zero;
+            }
+
+            Workmanager().registerOneOffTask(task.id, "sendEmailReminder",
+                initialDelay: remindertime.difference(DateTime.now()),
+                inputData: {
+                  "recipient": userEmail,
+                  "title": task.title,
+                  "desc": task.description,
+                  "deadline": MyDateUtils.getFormattedDate(task.deadline!),
+                });
+          }
+
           Fluttertoast.showToast(
               msg: editing
                   ? "Task Successfully Edited!"

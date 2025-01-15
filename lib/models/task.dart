@@ -9,21 +9,23 @@ class Task {
   Color color;
   int? recurringDays;
   Task? dependency;
+  int? reminder; // hrs before deadline
 
   bool get isRecurring => recurringDays != null;
 
   bool get hasDeadline => deadline != null;
 
-  Task(
-      {required this.title,
-      this.description = '',
-      this.isCompleted = false,
-      this.deadline,
-      this.color = Colors.blue,
-      this.recurringDays,
-      this.dependency,
-      String? id})
-      : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
+  Task({
+    required this.title,
+    this.description = '',
+    this.isCompleted = false,
+    this.deadline,
+    this.color = Colors.blue,
+    this.recurringDays,
+    this.dependency,
+    String? id,
+    this.reminder,
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -36,6 +38,7 @@ class Task {
       'recurringDays': recurringDays,
       'color': color.value,
       'id': id,
+      'reminder': reminder,
     };
   }
 
@@ -45,12 +48,13 @@ class Task {
       title: json['title'],
       description: json['description'],
       isCompleted: json['isCompleted'],
-      deadline: DateTime.parse(json['deadline']),
+      deadline: DateTime.tryParse(json['deadline'] ?? ""),
       dependency:
           json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
       id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      reminder: json['reminder'],
     );
   }
 
@@ -68,6 +72,6 @@ class Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
+    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, color: $color, recurringDays: $recurringDays, reminder: $reminder)';
   }
 }
