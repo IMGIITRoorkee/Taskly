@@ -352,6 +352,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
+            dependency: selectedDependency,
           );
           Fluttertoast.showToast(
               msg: editing
