@@ -187,9 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
       } else if (option == TaskOption.toggleTipVisibility) {
-      } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
-      } else if (option == TaskOption.exportToCSV) {
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
@@ -231,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void exportToCSV(List<Task> tasks) async {
     if (tasks.isEmpty) {
       Fluttertoast.showToast(msg: "There are no tasks to export!");
+      return;
     }
 
     if (Platform.isAndroid) {
