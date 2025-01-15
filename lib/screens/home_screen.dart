@@ -18,6 +18,7 @@ import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/meditation_reminder_widget.dart';
+import 'package:taskly/widgets/default_color.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 import 'dart:io';
@@ -214,6 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
         showtip = !showtip;
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
+      } else if (option == TaskOption.defaultColor){
+        showColorPickerDialog(context);
       }
       else if (option == TaskOption.toggleMDR) {
         if (meditationDailyRemider) {
@@ -381,6 +384,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? const Text("Stop Daily Meditation Reminder")
                       : const Text("Start Daily Meditation Reminder"),
                 )
+                const PopupMenuItem(
+                  value: TaskOption.defaultColor,
+                  child: Text("Set Default Task Color"),
+                ),
               ];
             },
           ),
