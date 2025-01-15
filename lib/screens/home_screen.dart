@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/service/permissions_service.dart';
 import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
@@ -135,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
           var days_diff =
-              tasks[index].deadline.difference(DateTime.now()).inDays + 1;
+              tasks[index].deadline!.difference(DateTime.now()).inDays + 1;
           if (days_diff == 0) {
             days_diff = 1;
           }
@@ -224,37 +225,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
-    void _editTask(int index) async {
-      final newTask = await Navigator.push<Task>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TaskFormScreen(
-            task: tasks[index],
-            availableTasks: tasks,
-          ),
-        ),
-      );
-
-      if (newTask != null) {
-        tasks[index] = newTask;
-        setState(() {});
-        await TaskStorage.saveTasks(tasks);
-      }
-    }
-  }
-
-  void _onSelectionAdded(int index) => setState(() {
-        selectedIndexes.add(index);
-        _showUpdatedSelectionsToast();
-      });
-
-  void _onSelectionRemoved(int index) => setState(() {
-        selectedIndexes.remove(index);
-        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
-      });
-
-  void _showUpdatedSelectionsToast() {
-    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
   }
 
   void _editTask(int index) async {
@@ -275,7 +245,35 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSelectionAdded(int index) => setState(() {
+        selectedIndexes.add(index);
+        _showUpdatedSelectionsToast();
+      });
+
+  void _onSelectionRemoved(int index) => setState(() {
+        selectedIndexes.remove(index);
+        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
+      });
+
+  void _showUpdatedSelectionsToast() {
+    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
+  }
+
   void exportToCSV(List<Task> tasks) async {
+    if (tasks.isEmpty) {
+      Fluttertoast.showToast(msg: "There are no tasks to export!");
+      return;
+    }
+
+    if (Platform.isAndroid) {
+      bool status = await PermissionsService.askForStorage();
+      if (!status) {
+        Fluttertoast.showToast(
+            msg: "Storage permission is needed to export csv file!");
+        return;
+      }
+    }
+
     // Prepare CSV data
     List<List<dynamic>> rows = [];
 
@@ -290,7 +288,9 @@ class _HomeScreenState extends State<HomeScreen> {
         task.description,
         task.isCompleted,
         task.hasDeadline,
-        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+        task.hasDeadline
+            ? '${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}'
+            : null,
       ]);
     }
 
@@ -302,7 +302,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (directory == null) {
       // User canceled the picker
-      print("Export canceled.");
       return;
     }
 

@@ -22,7 +22,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
   final FocusNode _focusNode = FocusNode();
-  
+
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late bool editing;
@@ -31,9 +31,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Task? selectedDependency;
   Color selectedColor = Colors.blue;
   int? repeatInterval;
+  late List<Task> _availableTasks;
+
 
   bool isTitleListening = false;
-
 
   List<String> _filteredSuggestions = [];
 
@@ -44,7 +45,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _titleController = TextEditingController(text: widget.task?.title);
     _descController = TextEditingController(text: widget.task?.description);
     selectedDependency = widget.task?.dependency;
-    widget.availableTasks.remove(widget.task);
+    _availableTasks = List<Task>.from(widget.availableTasks);
+    if (widget.task != null) {
+      _availableTasks.removeWhere((task) => task.id == widget.task!.id);
+    }
     hasDeadline = widget.task?.hasDeadline ?? false;
     selectedColor = widget.task?.color ?? Colors.blue;
     _titleController.addListener(_onTitleChanged);
@@ -53,13 +57,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         _removeOverlay();
       }
     });
-        repeatInterval =
+    repeatInterval =
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
   }
 
-    @override
+  @override
   void dispose() {
     _titleController.removeListener(_onTitleChanged);
     _titleController.dispose();
@@ -68,64 +72,62 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     super.dispose();
   }
 
- void _onTitleChanged() {
-  final input = _titleController.text.toLowerCase();
-  final newSuggestions = suggestions
-      .where((suggestion) => suggestion.toLowerCase().startsWith(input))
-      .toList();
+  void _onTitleChanged() {
+    final input = _titleController.text.toLowerCase();
+    final newSuggestions = suggestions
+        .where((suggestion) => suggestion.toLowerCase().startsWith(input))
+        .toList();
 
-  if (newSuggestions.isEmpty) {
-    _removeOverlay();
-  } else {
-    setState(() {
-      _filteredSuggestions = newSuggestions;
-    });
-    _updateOverlay(); // Update overlay dynamically
+    if (newSuggestions.isEmpty) {
+      _removeOverlay();
+    } else {
+      setState(() {
+        _filteredSuggestions = newSuggestions;
+      });
+      _updateOverlay(); // Update overlay dynamically
+    }
   }
-}
 
-void _updateOverlay() {
-  if (_overlayEntry != null) {
-    _overlayEntry!.remove();
+  void _updateOverlay() {
+    if (_overlayEntry != null) {
+      _overlayEntry!.remove();
+    }
+    _createOverlay();
+    Overlay.of(context).insert(_overlayEntry!); // Reinserts updated overlay
   }
-  _createOverlay();
-  Overlay.of(context).insert(_overlayEntry!); // Reinserts updated overlay
-}
 
-void _createOverlay() {
-  _overlayEntry = OverlayEntry(
-    builder: (context) => Positioned(
-      width: _layerLink.leaderSize?.width ?? 300,
-      child: CompositedTransformFollower(
-        link: _layerLink,
-        showWhenUnlinked: false,
-        offset: const Offset(0, 50),
-        child: Material(
-          elevation: 4,
-          child: Container(
-            constraints: const BoxConstraints(
-              maxHeight: 150, // Constrains the height
-            ),
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              itemCount: _filteredSuggestions.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  dense: true,
-                  title: Text(_filteredSuggestions[index]),
-                  onTap: () => _selectSuggestion(_filteredSuggestions[index]),
-                );
-              },
+  void _createOverlay() {
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: _layerLink.leaderSize?.width ?? 300,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 50),
+          child: Material(
+            elevation: 4,
+            child: Container(
+              constraints: const BoxConstraints(
+                maxHeight: 150, // Constrains the height
+              ),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: _filteredSuggestions.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    dense: true,
+                    title: Text(_filteredSuggestions[index]),
+                    onTap: () => _selectSuggestion(_filteredSuggestions[index]),
+                  );
+                },
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   void _removeOverlay() {
     _overlayEntry?.remove();
@@ -196,30 +198,30 @@ void _createOverlay() {
 
   List<Widget> _buildTextfields() {
     return [
-                CompositedTransformTarget(
-                  link: _layerLink,
-                  child: TextFormField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Task Title',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          isTitleListening = true;
-                          _toggleMic(_titleController);
-                        },
-                        icon: Icon(SpeechService.isListening() & isTitleListening
-                            ? Icons.circle_rounded
-                            : Icons.mic_rounded),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Title cannot be empty!";
-                      }
-                      return null;
-                    },
-                  ),
-                ),
+      CompositedTransformTarget(
+        link: _layerLink,
+        child: TextFormField(
+          controller: _titleController,
+          decoration: InputDecoration(
+            labelText: 'Task Title',
+            suffixIcon: IconButton(
+              onPressed: () {
+                isTitleListening = true;
+                _toggleMic(_titleController);
+              },
+              icon: Icon(SpeechService.isListening() & isTitleListening
+                  ? Icons.circle_rounded
+                  : Icons.mic_rounded),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Title cannot be empty!";
+            }
+            return null;
+          },
+        ),
+      ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15.0),
         child: TextFormField(
@@ -347,7 +349,6 @@ void _createOverlay() {
           Task task = Task(
             title: _titleController.text,
             description: _descController.text,
-            hasDeadline: hasDeadline,
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor,
@@ -362,7 +363,6 @@ void _createOverlay() {
       child: const Text('Save Task'),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -385,7 +385,7 @@ void _createOverlay() {
             child: Column(
               children: [
                 ..._buildTextfields(),
-                                // Dropdown for selecting a dependency task
+                // Dropdown for selecting a dependency task
                 DropdownButtonFormField<String?>(
                   value: selectedDependency?.title, // Compare by title
                   items: [
@@ -393,7 +393,7 @@ void _createOverlay() {
                       value: null,
                       child: Text('None'),
                     ),
-                    ...widget.availableTasks.map((task) {
+                    ..._availableTasks.map((task) {
                       return DropdownMenuItem<String?>(
                         value: task.title, // Use title as the value
                         child: Text(task.title),
@@ -402,7 +402,7 @@ void _createOverlay() {
                   ],
                   onChanged: (String? newTaskTitle) {
                     setState(() {
-                      selectedDependency = widget.availableTasks.firstWhere(
+                      selectedDependency = _availableTasks.firstWhere(
                         (task) => task.title == newTaskTitle,
                         orElse: () => null as Task,
                       );
