@@ -123,5 +123,8 @@ String extraMeditation(int selectedMinutes, int extraSeconds) =>
     "Great job! You meditated for $selectedMinutes minutes and $extraSeconds extra seconds";
 String meditationComplete(int minutesMeditated, int secondsMeditated) =>
     "Session ended. You meditated for $minutesMeditated minutes and $secondsMeditated seconds";
+String meditationCompleteKudos (int minute) =>"Complete a $minute minute meditation session";
+String meditationCompleteKudosExtra (int minute) =>"$minute minutes of extra meditation.";
+String meditationCompleteKudosLess (int minute) =>"$minute minutes of meditation missed.";
 String AskDependencyCompletion = "Complete the dependency first!";
 String meditationEndedTooSoon() => "Oh no! You stopped meditating too quickly!";
