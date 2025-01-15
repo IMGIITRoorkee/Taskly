@@ -41,6 +41,16 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                           color: Colors.white,
                         ),
                       ),
+                      if (meditationHistory!.isNotEmpty)
+                          TextButton(
+                            onPressed: () async {
+                              await MeditationHistoryStorage.clearHistory();
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text("Clear all"),
+                          ),
                       const SizedBox(height: 16),
                       Expanded(
                         child: ListView.builder(
