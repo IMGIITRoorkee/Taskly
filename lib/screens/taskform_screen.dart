@@ -358,6 +358,7 @@ void setSelectedColour() async{
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
             color: selectedColor ?? defaultColor,
+            dependency: selectedDependency,
           );
           Fluttertoast.showToast(
               msg: editing
