@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/service/permissions_service.dart';
 import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
@@ -186,42 +187,13 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const MeditationScreen()));
       } else if (option == TaskOption.toggleTipVisibility) {
+      } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
+      } else if (option == TaskOption.exportToCSV) {
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
       }
     });
-    void _editTask(int index) async {
-      final newTask = await Navigator.push<Task>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TaskFormScreen(
-            task: tasks[index],
-            availableTasks: tasks,
-          ),
-        ),
-      );
-
-      if (newTask != null) {
-        tasks[index] = newTask;
-        setState(() {});
-        await TaskStorage.saveTasks(tasks);
-      }
-    }
-  }
-
-  void _onSelectionAdded(int index) => setState(() {
-        selectedIndexes.add(index);
-        _showUpdatedSelectionsToast();
-      });
-
-  void _onSelectionRemoved(int index) => setState(() {
-        selectedIndexes.remove(index);
-        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
-      });
-
-  void _showUpdatedSelectionsToast() {
-    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
   }
 
   void _editTask(int index) async {
@@ -242,7 +214,34 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSelectionAdded(int index) => setState(() {
+        selectedIndexes.add(index);
+        _showUpdatedSelectionsToast();
+      });
+
+  void _onSelectionRemoved(int index) => setState(() {
+        selectedIndexes.remove(index);
+        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
+      });
+
+  void _showUpdatedSelectionsToast() {
+    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
+  }
+
   void exportToCSV(List<Task> tasks) async {
+    if (tasks.isEmpty) {
+      Fluttertoast.showToast(msg: "There are no tasks to export!");
+    }
+
+    if (Platform.isAndroid) {
+      bool status = await PermissionsService.askForStorage();
+      if (!status) {
+        Fluttertoast.showToast(
+            msg: "Storage permission is needed to export csv file!");
+        return;
+      }
+    }
+
     // Prepare CSV data
     List<List<dynamic>> rows = [];
 
@@ -271,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (directory == null) {
       // User canceled the picker
-      print("Export canceled.");
       return;
     }
 
@@ -282,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final file = File(path);
     await file.writeAsString(csv);
 
-    print("File saved at: $path");
+    Fluttertoast.showToast(msg: "File saved at: $path");
   }
 
   void _loadKudos() async {
