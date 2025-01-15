@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/service/permissions_service.dart';
 import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
@@ -232,6 +233,15 @@ class _HomeScreenState extends State<HomeScreen> {
       Fluttertoast.showToast(msg: "There are no tasks to export!");
     }
 
+    if (Platform.isAndroid) {
+      bool status = await PermissionsService.askForStorage();
+      if (!status) {
+        Fluttertoast.showToast(
+            msg: "Storage permission is needed to export csv file!");
+        return;
+      }
+    }
+
     // Prepare CSV data
     List<List<dynamic>> rows = [];
 
@@ -260,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (directory == null) {
       // User canceled the picker
-      print("Export canceled.");
       return;
     }
 
@@ -271,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final file = File(path);
     await file.writeAsString(csv);
 
-    print("File saved at: $path");
+    Fluttertoast.showToast(msg: "File saved at: $path");
   }
 
   void _loadKudos() async {
