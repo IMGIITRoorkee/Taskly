@@ -323,7 +323,7 @@ Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
       try {
         var row = rows[i];   
         DateTime? deadline;
-        if (row[4].toString().isNotEmpty) {
+        if (row[3].toString() == 'true') {
           List<String> dateParts = row[4].toString().split('/');
           deadline = DateTime(
             int.parse(dateParts[2]), 
@@ -335,7 +335,7 @@ Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
           title: row[0].toString(),
           description: row[1].toString(),
           isCompleted: row[2].toString().toLowerCase() == 'true',
-          deadline: deadline ?? DateTime.now(),
+          deadline: deadline,
         );
         importedTasks.add(task);
       } catch (e) {
