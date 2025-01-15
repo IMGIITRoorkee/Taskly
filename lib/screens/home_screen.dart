@@ -213,6 +213,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSelectionAdded(int index) => setState(() {
+        selectedIndexes.add(index);
+        _showUpdatedSelectionsToast();
+      });
+
+  void _onSelectionRemoved(int index) => setState(() {
+        selectedIndexes.remove(index);
+        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
+      });
+
+  void _showUpdatedSelectionsToast() {
+    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
+  }
+
   void exportToCSV(List<Task> tasks) async {
     if (tasks.isEmpty) {
       Fluttertoast.showToast(msg: "There are no tasks to export!");
