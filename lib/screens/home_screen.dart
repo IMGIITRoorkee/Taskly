@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/service/permissions_service.dart';
 import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
@@ -15,6 +16,7 @@ import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
+import 'package:taskly/widgets/default_color.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 import 'dart:io';
@@ -155,6 +157,11 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
+void kudosForMeditation(int scoreChange, String mssg) async{
+  kudos.score += scoreChange;
+  kudos.history.add([mssg, scoreChange.toString()]);
+  await KudosStorage.saveKudos(kudos);
+}
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
     setState(() {
@@ -185,11 +192,13 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       } else if (option == TaskOption.launchMeditationScreen) {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const MeditationScreen()));
+            MaterialPageRoute(builder: (context) => MeditationScreen(kudosForMeditation:  kudosForMeditation)));
       } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
+      } else if (option == TaskOption.defaultColor){
+        showColorPickerDialog(context);
       }
       else if (option == TaskOption.loadFromCSV) {
         importFromCSV(tasks).then((newTasks) {
@@ -201,37 +210,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
     });
-    void _editTask(int index) async {
-      final newTask = await Navigator.push<Task>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TaskFormScreen(
-            task: tasks[index],
-            availableTasks: tasks,
-          ),
-        ),
-      );
-
-      if (newTask != null) {
-        tasks[index] = newTask;
-        setState(() {});
-        await TaskStorage.saveTasks(tasks);
-      }
-    }
-  }
-
-  void _onSelectionAdded(int index) => setState(() {
-        selectedIndexes.add(index);
-        _showUpdatedSelectionsToast();
-      });
-
-  void _onSelectionRemoved(int index) => setState(() {
-        selectedIndexes.remove(index);
-        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
-      });
-
-  void _showUpdatedSelectionsToast() {
-    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
   }
 
   void _editTask(int index) async {
@@ -252,7 +230,35 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSelectionAdded(int index) => setState(() {
+        selectedIndexes.add(index);
+        _showUpdatedSelectionsToast();
+      });
+
+  void _onSelectionRemoved(int index) => setState(() {
+        selectedIndexes.remove(index);
+        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
+      });
+
+  void _showUpdatedSelectionsToast() {
+    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
+  }
+
   void exportToCSV(List<Task> tasks) async {
+    if (tasks.isEmpty) {
+      Fluttertoast.showToast(msg: "There are no tasks to export!");
+      return;
+    }
+
+    if (Platform.isAndroid) {
+      bool status = await PermissionsService.askForStorage();
+      if (!status) {
+        Fluttertoast.showToast(
+            msg: "Storage permission is needed to export csv file!");
+        return;
+      }
+    }
+
     // Prepare CSV data
     List<List<dynamic>> rows = [];
 
@@ -281,7 +287,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (directory == null) {
       // User canceled the picker
-      print("Export canceled.");
       return;
     }
 
@@ -291,8 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Write the CSV file
     final file = File(path);
     await file.writeAsString(csv);
-
-    print("File saved at: $path");
+    Fluttertoast.showToast(msg: "File saved at: $path");
   }
 
 Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
@@ -417,6 +421,10 @@ Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
                 const PopupMenuItem(
                   value: TaskOption.loadFromCSV,
                   child: Text("Load Tasks from csv file."),
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.defaultColor,
+                  child: Text("Set Default Task Color"),
                 ),
               ];
             },

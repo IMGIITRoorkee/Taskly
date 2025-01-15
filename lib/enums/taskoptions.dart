@@ -7,4 +7,5 @@ enum TaskOption {
   toggleTipVisibility,
   exportToCSV,
   loadFromCSV,
+  defaultColor,
 }
