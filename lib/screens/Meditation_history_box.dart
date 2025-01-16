@@ -72,7 +72,7 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                               ),
                               child: ListTile(
                                 title: Text(
-                                  "${meditationHistory?[index]["time"]} minutes",
+                                  "${meditationHistory[index]["time"]} minutes",
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -80,7 +80,7 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  "${meditationHistory?[index]["diff"]} seconds",
+                                  "${meditationHistory[index]["diff"]} seconds",
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w500,
@@ -88,7 +88,7 @@ class _MeditationHistoryState extends State<MeditationHistory> {
                                   ),
                                 ),
                                 trailing: Text(
-                                  meditationHistory?[index]["date"],
+                                  meditationHistory[index]["date"],
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey[300],
