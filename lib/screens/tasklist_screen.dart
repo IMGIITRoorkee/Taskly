@@ -60,30 +60,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
       });
   }
 
-  List<MapEntry<String, List<Task>>> _groupTasksByDeadline() {
-    final Map<String, List<Task>> grouped = {
-      'No Deadline': [],
-    };
-
-    for (var task in widget.tasks) {
-      if (!task.hasDeadline) {
-        grouped['No Deadline']!.add(task);
-        continue;
-      }
-
-      final deadline = MyDateUtils.getFormattedDate(task.deadline!);
-      grouped.putIfAbsent(deadline, () => []);
-      grouped[deadline]!.add(task);
-    }
-
-    return grouped.entries.toList()
-      ..sort((a, b) {
-        if (a.key == 'No Deadline') return -1;
-        if (b.key == 'No Deadline') return 1;
-        return a.key.compareTo(b.key);
-      });
-  }
-
   void _showTaskDetails(Task task, int index) async {
     bool? res = await showDialog(
       context: context,
