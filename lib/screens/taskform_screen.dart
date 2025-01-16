@@ -5,6 +5,7 @@ import 'package:taskly/models/subtask.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
+import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
 import 'package:taskly/widgets/spacing.dart';
@@ -32,8 +33,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   var hasDeadline = false;
   DateTime? deadline;
   Task? selectedDependency;
-  Color selectedColor = Colors.blue;
+  Color? selectedColor;
   int? repeatInterval;
+  Color defaultColor = Colors.blue;
   late List<Task> _availableTasks;
   late List<Subtask> subtasks;
 
@@ -53,7 +55,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _availableTasks.removeWhere((task) => task.id == widget.task!.id);
     }
     hasDeadline = widget.task?.hasDeadline ?? false;
-    selectedColor = widget.task?.color ?? Colors.blue;
     _titleController.addListener(_onTitleChanged);
     _focusNode.addListener(() {
       if (!_focusNode.hasFocus) {
@@ -64,8 +65,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
-    print(widget.task?.subtasks);
     subtasks = widget.task?.subtasks ?? [];
+    setSelectedColour();
   }
 
   @override
@@ -75,6 +76,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _descController.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  void setSelectedColour() async {
+    defaultColor = await DefaultTaskColorStorage.loadDefaultColor();
+    selectedColor = widget.task?.color ?? defaultColor;
   }
 
   void _onTitleChanged() {
@@ -153,7 +159,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         title: const Text('Pick Task Color'),
         content: SingleChildScrollView(
           child: ColorPicker(
-            pickerColor: selectedColor,
+            pickerColor: selectedColor ?? defaultColor,
             onColorChanged: (color) {
               setState(() {
                 selectedColor = color;
@@ -382,7 +388,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             description: _descController.text,
             deadline: hasDeadline ? deadline : null,
             recurringDays: repeatInterval,
-            color: selectedColor,
+            color: selectedColor ?? defaultColor,
+            dependency: selectedDependency,
             subtasks: subtasks,
           );
           Fluttertoast.showToast(
