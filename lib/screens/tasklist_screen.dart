@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/utils/share_utils.dart';
 
 class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
@@ -68,6 +69,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         task: task,
         onEdit: () => widget.onEdit(index),
         onStart: () => widget.onStart(index),
+        onShare: () => ShareUtils.shareTask(task),
         onDelete: () async {
           setState(() {
             deletedTask = widget.tasks[index];
