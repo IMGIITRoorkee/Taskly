@@ -123,6 +123,10 @@ class TaskBoxWidget extends StatelessWidget {
                               onPressed: onStart,
                             ),
                           IconButton(
+                            icon: const Icon(Icons.share_rounded),
+                            onPressed: onShare,
+                          ),
+                          IconButton(
                             icon: const Icon(Icons.edit, color: Colors.blue),
                             onPressed: onEdit,
                           ),

@@ -71,9 +71,4 @@ class Task {
   String toString() {
     return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
   }
-
-  @override
-  String toString() {
-    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
-  }
 }

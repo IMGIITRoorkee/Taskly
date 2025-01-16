@@ -66,6 +66,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         task: task,
         onEdit: () => widget.onEdit(index),
         onStart: () => widget.onStart(index),
+        onShare: () => ShareUtils.shareTask(task),
         onDelete: () async {
           setState(() {
             deletedTask = widget.tasks[index];
