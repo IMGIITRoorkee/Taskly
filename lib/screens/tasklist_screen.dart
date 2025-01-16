@@ -13,6 +13,7 @@ class TaskListScreen extends StatefulWidget {
   final Function(int) onSelectionAdded;
   final Function(int) onSelectionRemoved;
   final Function(int) onStart;
+  final Function(int, Task) onSubtaskChanged;
 
   const TaskListScreen({
     super.key,
@@ -23,6 +24,7 @@ class TaskListScreen extends StatefulWidget {
     required this.onSelectionAdded,
     required this.onSelectionRemoved,
     required this.onStart,
+    required this.onSubtaskChanged,
   });
 
   @override
@@ -38,18 +40,18 @@ class _TaskListScreenState extends State<TaskListScreen> {
     final Map<String, List<Task>> grouped = {
       'No Deadline': [],
     };
-    
+
     for (var task in widget.tasks) {
       if (!task.hasDeadline) {
         grouped['No Deadline']!.add(task);
         continue;
       }
-      
+
       final deadline = MyDateUtils.getFormattedDate(task.deadline!);
       grouped.putIfAbsent(deadline, () => []);
       grouped[deadline]!.add(task);
     }
-    
+
     return grouped.entries.toList()
       ..sort((a, b) {
         if (a.key == 'No Deadline') return -1;
@@ -58,9 +60,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
       });
   }
 
-  void _showTaskDetails(Task task, int index) {
-    showDialog(
+  void _showTaskDetails(Task task, int index) async {
+    bool? res = await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => TaskBoxWidget(
         task: task,
         onEdit: () => widget.onEdit(index),
@@ -95,9 +98,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
             },
           );
         },
-        onClose: () => Navigator.of(context).pop(),
       ),
     );
+    if (res != null && res) {
+      widget.onSubtaskChanged(index, task);
+    }
+  }
+
+  void _toggleTaskSelection(int index) {
+    if (widget.selectedIndexes.contains(index)) {
+      widget.onSelectionRemoved(index);
+    } else {
+      widget.onSelectionAdded(index);
+    }
   }
 
   Widget _buildTaskTile(Task task, int index) {
@@ -126,11 +139,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
               : task.color.withOpacity(0.2),
           margin: const EdgeInsets.all(0),
           child: ListTile(
-            onTap: () => _showTaskDetails(task, index),
+            onTap: () {
+              if (widget.selectedIndexes.isEmpty) {
+                _showTaskDetails(task, index);
+              } else {
+                _toggleTaskSelection(index);
+              }
+            },
+            onLongPress: () => _toggleTaskSelection(index),
             title: Text(
               task.title,
               style: TextStyle(
-                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                decoration:
+                    task.isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
             subtitle: Text(
@@ -144,7 +165,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 if (task.dependency != null)
                   Icon(
                     Icons.link,
-                    color: task.dependency!.isCompleted ? Colors.green : Colors.blue,
+                    color: task.dependency!.isCompleted
+                        ? Colors.green
+                        : Colors.blue,
                   ),
                 IconButton(
                   onPressed: () => widget.onEdit(index),
@@ -166,7 +189,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   @override
   Widget build(BuildContext context) {
     final groupedTasks = _groupTasksByDeadline();
-    
+
     return ListView.builder(
       itemCount: groupedTasks.length,
       shrinkWrap: true,
@@ -174,7 +197,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
       itemBuilder: (context, sectionIndex) {
         final section = groupedTasks[sectionIndex];
         final isExpanded = _expandedSections[section.key] ?? true;
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

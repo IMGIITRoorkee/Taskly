@@ -311,6 +311,12 @@ void kudosForMeditation(int scoreChange, String mssg) async{
     }
   }
 
+  void _onSubtaskChanged(int index, Task t) async {
+    tasks[index] = t;
+    setState(() {});
+    await TaskStorage.saveTasks(tasks);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -382,6 +388,7 @@ void kudosForMeditation(int scoreChange, String mssg) async{
                   onSelectionAdded: _onSelectionAdded,
                   onSelectionRemoved: _onSelectionRemoved,
                   onStart: _onStartTask,
+                  onSubtaskChanged: _onSubtaskChanged,
                 ),
         ],
       ),
