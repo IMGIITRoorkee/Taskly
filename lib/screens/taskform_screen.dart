@@ -414,25 +414,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           },
         ),
       ),
-      const Spacing(),
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Subtasks"),
-          subtitle: const Text("Add subtasks to your task"),
-          trailing: subtaskTrailing,
-          onTap: () async {
-            List<Subtask>? sub = await showModalBottomSheet(
-              context: context,
-              builder: (context) => SubtaskAddCard(task: widget.task),
-            );
-            if (sub != null) {
-              subtasks = sub;
-              setState(() {});
-            }
-          },
-        ),
-      ),
     ];
   }
 
