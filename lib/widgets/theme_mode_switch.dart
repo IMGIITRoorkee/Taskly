@@ -2,43 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taskly/providers/theme_provider.dart';
 
-class ThemeModeSwitch extends StatefulWidget {
+class ThemeModeSwitch extends StatelessWidget {
   const ThemeModeSwitch({super.key});
 
   @override
-  State<ThemeModeSwitch> createState() => _ThemeModeSwitchState();
-}
-
-class _ThemeModeSwitchState extends State<ThemeModeSwitch> {
-  late ThemeProvider themeProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Text(
-              "Dark Mode",
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(
-              width: 5,
-            ),
-            Switch(
-              value: themeProvider.darkTheme,
-              onChanged: (v) {
-                themeProvider.darkTheme = v;
-              },
-            ),
-          ],
+    return Consumer<ThemeProvider>(
+      builder: (context, value, child) => Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        margin: const EdgeInsets.all(0),
+        child: IconButton(
+          onPressed: () => value.darkTheme = !value.darkTheme,
+          icon: Icon(
+            value.darkTheme
+                ? Icons.dark_mode_rounded
+                : Icons.light_mode_rounded,
+          ),
         ),
       ),
     );
