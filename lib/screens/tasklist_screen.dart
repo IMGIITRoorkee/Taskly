@@ -13,6 +13,9 @@ class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final Function(int, bool?) onToggle;
   final Function(int) onEdit;
+  final Set<int> selectedIndexes;
+  final Function(int) onSelectionAdded;
+  final Function(int) onSelectionRemoved;
   final Function(int) onStart;
 
   const TaskListScreen({
@@ -20,6 +23,9 @@ class TaskListScreen extends StatefulWidget {
     required this.tasks,
     required this.onToggle,
     required this.onEdit,
+    required this.selectedIndexes,
+    required this.onSelectionAdded,
+    required this.onSelectionRemoved,
     required this.onStart,
   });
 
@@ -28,158 +34,201 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  final Map<String, bool> _expandedSections = {};
   int? deletedIndex;
   Task? deletedTask;
 
+  List<MapEntry<String, List<Task>>> _groupTasksByDeadline() {
+    final Map<String, List<Task>> grouped = {
+      'No Deadline': [],
+    };
+
+    for (var task in widget.tasks) {
+      if (!task.hasDeadline) {
+        grouped['No Deadline']!.add(task);
+        continue;
+      }
+
+      final deadline = MyDateUtils.getFormattedDate(task.deadline!);
+      grouped.putIfAbsent(deadline, () => []);
+      grouped[deadline]!.add(task);
+    }
+
+    return grouped.entries.toList()
+      ..sort((a, b) {
+        if (a.key == 'No Deadline') return -1;
+        if (b.key == 'No Deadline') return 1;
+        return a.key.compareTo(b.key);
+      });
+  }
+
+  void _showTaskDetails(Task task, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => TaskBoxWidget(
+        task: task,
+        onEdit: () => widget.onEdit(index),
+        onStart: () => widget.onStart(index),
+        onDelete: () async {
+          setState(() {
+            deletedTask = widget.tasks[index];
+            deletedIndex = index;
+            widget.tasks.removeAt(index);
+          });
+          Navigator.of(context).pop();
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+                SnackBar(
+                  content: const Text("Deleted accidentally?"),
+                  action: SnackBarAction(
+                    label: "Undo",
+                    onPressed: () {
+                      widget.tasks.insert(deletedIndex!, deletedTask!);
+                      setState(() {});
+                    },
+                  ),
+                ),
+              )
+              .closed
+              .then(
+            (value) async {
+              if (value != SnackBarClosedReason.action) {
+                await TaskStorage.saveTasks(widget.tasks);
+              }
+            },
+          );
+        },
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    );
+  }
+
+  Widget _buildTaskTile(Task task, int index, List<Tag> tags) {
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              setState(() {
+                widget.tasks.removeAt(index);
+              });
+              await TaskStorage.saveTasks(widget.tasks);
+            },
+            icon: Icons.delete,
+            foregroundColor: Colors.red,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        child: Card(
+          elevation: 0,
+          color: widget.selectedIndexes.contains(index)
+              ? Colors.grey.withOpacity(0.5)
+              : task.color.withOpacity(0.2),
+          margin: const EdgeInsets.all(0),
+          child: ListTile(
+            onTap: () => _showTaskDetails(task, index),
+            title: Text(
+              task.title,
+              style: TextStyle(
+                decoration:
+                    task.isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            subtitle: Column(
+              children: [
+                Text(
+                  task.description.length > 30
+                      ? '${task.description.substring(0, 30)}...'
+                      : task.description,
+                ),
+                const Spacing(),
+                Wrap(
+                  spacing: 5,
+                  runSpacing: 5,
+                  children: tags
+                      .map(
+                        (e) => Badge(
+                          backgroundColor: e.color,
+                          label: Text(e.title),
+                        ),
+                      )
+                      .toList(),
+                )
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (task.dependency != null)
+                  Icon(
+                    Icons.link,
+                    color: task.dependency!.isCompleted
+                        ? Colors.green
+                        : Colors.blue,
+                  ),
+                IconButton(
+                  onPressed: () => widget.onEdit(index),
+                  icon: const Icon(Icons.edit),
+                ),
+                const SizedBox(width: 5),
+                Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (value) => widget.onToggle(index, value),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final groupedTasks = _groupTasksByDeadline();
+
     return Consumer<TagsProvider>(
       builder: (context, value, child) => ListView.builder(
-        itemCount: widget.tasks.length,
+        itemCount: groupedTasks.length,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          final task = widget.tasks[index];
+        itemBuilder: (context, sectionIndex) {
+          final task = widget.tasks[sectionIndex];
+          final section = groupedTasks[sectionIndex];
+          final isExpanded = _expandedSections[section.key] ?? true;
 
           List<Tag> tags = value.allTags
               .where(
                   (alltag) => task.tags.any((element) => element == alltag.id))
               .toList();
 
-          return Slidable(
-            endActionPane: ActionPane(
-              motion: const StretchMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (context) async {
-                    setState(() {
-                      widget.tasks.removeAt(index);
-                    });
-                    await TaskStorage.saveTasks(widget.tasks);
-                  },
-                  icon: Icons.delete,
-                  foregroundColor: Colors.red,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                onTap: () {
+                  setState(() {
+                    _expandedSections[section.key] = !isExpanded;
+                  });
+                },
+                leading: Icon(
+                  isExpanded ? Icons.expand_more : Icons.chevron_right,
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-              child: Card(
-                elevation: 0,
-                color: task.color.withOpacity(0.2),
-                margin: const EdgeInsets.all(0),
-                child: ListTile(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => TaskBoxWidget(
-                        task: task,
-                        onEdit: () => widget.onEdit(index),
-                        onStart: () => widget.onStart(index),
-                        onDelete: () async {
-                          setState(() {
-                            deletedTask = widget.tasks[index];
-                            deletedIndex = index;
-                            widget.tasks.removeAt(index);
-                          });
-                          Navigator.of(context)
-                              .pop(); // Close the dialog after deletion
-
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
-                                SnackBar(
-                                  content: const Text("Deleted accidentally?"),
-                                  action: SnackBarAction(
-                                    label: "Undo",
-                                    onPressed: () {
-                                      widget.tasks
-                                          .insert(deletedIndex!, deletedTask!);
-                                      setState(() {});
-                                    },
-                                  ),
-                                ),
-                              )
-                              .closed
-                              .then(
-                            (value) async {
-                              if (value != SnackBarClosedReason.action) {
-                                await TaskStorage.saveTasks(widget.tasks);
-                              }
-                            },
-                          );
-                        },
-                        onClose: () => Navigator.of(context).pop(),
-                      ),
-                    );
-                  },
-                  title: Row(
-                    children: [
-                      Text(
-                        task.title,
-                        style: TextStyle(
-                          decoration: task.isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      if (task.isRecurring) const Icon(Icons.repeat_rounded)
-                    ],
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.description.length > 30
-                            ? '${task.description.substring(0, 30)}...'
-                            : task.description,
-                      ),
-                      Row(
-                        children: [
-                          if (task.hasDeadline)
-                            Text(
-                                'Deadline: ${MyDateUtils.getFormattedDate(task.deadline)}'),
-                          if (task.hasDeadline &&
-                              task.deadline.isBefore(DateTime.now()) &&
-                              !task.isCompleted)
-                            const Icon(
-                              Icons.warning,
-                              color: Colors.red,
-                            ),
-                        ],
-                      ),
-                      const Spacing(),
-                      Wrap(
-                        spacing: 5,
-                        runSpacing: 5,
-                        children: tags
-                            .map(
-                              (e) => Badge(
-                                backgroundColor: e.color,
-                                label: Text(e.title),
-                              ),
-                            )
-                            .toList(),
-                      )
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () => widget.onEdit(index),
-                        icon: const Icon(Icons.edit),
-                      ),
-                      const SizedBox(width: 5),
-                      Checkbox(
-                        value: task.isCompleted,
-                        onChanged: (value) => widget.onToggle(index, value),
-                      ),
-                    ],
-                  ),
+                title: Text(
+                  '${section.key} (${section.value.length})',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
-            ),
+              if (isExpanded)
+                ...section.value.map((task) {
+                  final index = widget.tasks.indexOf(task);
+                  return _buildTaskTile(task, index, tags);
+                }),
+            ],
           );
         },
       ),
