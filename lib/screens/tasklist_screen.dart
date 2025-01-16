@@ -17,6 +17,7 @@ class TaskListScreen extends StatefulWidget {
   final Function(int) onSelectionAdded;
   final Function(int) onSelectionRemoved;
   final Function(int) onStart;
+  final Function(int, Task) onSubtaskChanged;
 
   const TaskListScreen({
     super.key,
@@ -27,6 +28,7 @@ class TaskListScreen extends StatefulWidget {
     required this.onSelectionAdded,
     required this.onSelectionRemoved,
     required this.onStart,
+    required this.onSubtaskChanged,
   });
 
   @override
@@ -62,9 +64,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
       });
   }
 
-  void _showTaskDetails(Task task, int index) {
-    showDialog(
+  void _showTaskDetails(Task task, int index) async {
+    bool? res = await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => TaskBoxWidget(
         task: task,
         onEdit: () => widget.onEdit(index),
@@ -99,9 +102,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
             },
           );
         },
-        onClose: () => Navigator.of(context).pop(),
       ),
     );
+    if (res != null && res) {
+      widget.onSubtaskChanged(index, task);
+    }
+  }
+
+  void _toggleTaskSelection(int index) {
+    if (widget.selectedIndexes.contains(index)) {
+      widget.onSelectionRemoved(index);
+    } else {
+      widget.onSelectionAdded(index);
+    }
   }
 
   Widget _buildTaskTile(Task task, int index, List<Tag> tags) {
@@ -130,7 +143,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
               : task.color.withOpacity(0.2),
           margin: const EdgeInsets.all(0),
           child: ListTile(
-            onTap: () => _showTaskDetails(task, index),
+            onTap: () {
+              if (widget.selectedIndexes.isEmpty) {
+                _showTaskDetails(task, index);
+              } else {
+                _toggleTaskSelection(index);
+              }
+            },
+            onLongPress: () => _toggleTaskSelection(index),
             title: Text(
               task.title,
               style: TextStyle(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:taskly/models/subtask.dart';
+
 class Task {
   String id;
   String title;
@@ -9,6 +11,7 @@ class Task {
   Color color;
   int? recurringDays;
   Task? dependency;
+  List<Subtask> subtasks;
   List<String> tags; // the tag ids
 
   bool get isRecurring => recurringDays != null;
@@ -24,8 +27,10 @@ class Task {
     this.recurringDays,
     this.dependency,
     String? id,
+    List<Subtask>? subtasks,
     List<String>? tags,
   })  : id = id ?? DateTime.now().microsecondsSinceEpoch.toString(),
+        subtasks = subtasks ?? [],
         tags = tags ?? [];
 
   // Convert a Task object to JSON
@@ -40,29 +45,41 @@ class Task {
       'color': color.value,
       'id': id,
       'tags': tags,
+      'subtasks': subtasks.map((e) => e.toMap()).toList(),
     };
   }
 
   // Create a Task object from JSON
   factory Task.fromJson(Map<String, dynamic> json) {
+    List<Subtask> subtasks;
+    if (json['subtasks'] == null) {
+      subtasks = [];
+    } else {
+      subtasks =
+          (json['subtasks'] as List).map((e) => Subtask.fromMap(e)).toList();
+    }
+
     return Task(
       title: json['title'],
       description: json['description'],
       isCompleted: json['isCompleted'],
-      deadline:
-          json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
+      deadline: DateTime.tryParse(json['deadline'] ?? ""),
       dependency:
           json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
       id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       tags: List.from(json['tags']),
+      subtasks: subtasks,
     );
   }
 
   void toggleCompletion() {
     if (!isRecurring) {
       isCompleted = !isCompleted;
+      for (var element in subtasks) {
+        element.isCompleted = true;
+      }
       return;
     }
 
@@ -74,6 +91,6 @@ class Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, hasDeadline: $hasDeadline)';
+    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, deadline: $deadline, color: $color, recurringDays: $recurringDays, subtasks: $subtasks)';
   }
 }

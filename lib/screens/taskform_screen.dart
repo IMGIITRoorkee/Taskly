@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/tag.dart';
+import 'package:taskly/models/subtask.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
@@ -10,6 +11,7 @@ import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
 import 'package:taskly/widgets/spacing.dart';
 import 'package:taskly/widgets/tags_card.dart';
+import 'package:taskly/widgets/subtask_add_card.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -37,7 +39,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   int? repeatInterval;
   Color defaultColor = Colors.blue;
   late List<Task> _availableTasks;
-
+  late List<Subtask> subtasks;
   late List<String> tags;
 
   bool isTitleListening = false;
@@ -66,6 +68,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
+    subtasks = widget.task?.subtasks ?? [];
     setSelectedColour();
     tags = widget.task?.tags ?? [];
   }
@@ -309,6 +312,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       );
     }
 
+    Widget subtaskTrailing;
+    if (subtasks.isEmpty) {
+      subtaskTrailing = const Icon(Icons.subdirectory_arrow_left_rounded);
+    } else {
+      subtaskTrailing = Text("${subtasks.length}");
+    }
+
     return [
       _buildCard(
         "Colour",
@@ -385,6 +395,44 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           }
         },
       ),
+      const Spacing(),
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Subtasks"),
+          subtitle: const Text("Add subtasks to your task"),
+          trailing: subtaskTrailing,
+          onTap: () async {
+            List<Subtask>? sub = await showModalBottomSheet(
+              context: context,
+              builder: (context) => SubtaskAddCard(task: widget.task),
+            );
+            if (sub != null) {
+              subtasks = sub;
+              setState(() {});
+            }
+          },
+        ),
+      ),
+      const Spacing(),
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Subtasks"),
+          subtitle: const Text("Add subtasks to your task"),
+          trailing: subtaskTrailing,
+          onTap: () async {
+            List<Subtask>? sub = await showModalBottomSheet(
+              context: context,
+              builder: (context) => SubtaskAddCard(task: widget.task),
+            );
+            if (sub != null) {
+              subtasks = sub;
+              setState(() {});
+            }
+          },
+        ),
+      ),
     ];
   }
 
@@ -399,6 +447,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             recurringDays: repeatInterval,
             color: selectedColor ?? defaultColor,
             dependency: selectedDependency,
+            subtasks: subtasks,
             tags: tags,
           );
           Fluttertoast.showToast(
