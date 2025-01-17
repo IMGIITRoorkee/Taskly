@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:taskly/models/tag.dart';
 import 'package:taskly/models/subtask.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
@@ -9,6 +10,7 @@ import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
 import 'package:taskly/widgets/spacing.dart';
+import 'package:taskly/widgets/tags_card.dart';
 import 'package:taskly/widgets/subtask_add_card.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -38,6 +40,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Color defaultColor = Colors.blue;
   late List<Task> _availableTasks;
   late List<Subtask> subtasks;
+  late List<String> tags;
 
   bool isTitleListening = false;
 
@@ -67,6 +70,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     if (hasDeadline) deadline = widget.task?.deadline;
     subtasks = widget.task?.subtasks ?? [];
     setSelectedColour();
+    tags = widget.task?.tags ?? [];
   }
 
   @override
@@ -150,6 +154,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _titleController.text = suggestion;
       _removeOverlay();
     });
+    tags = widget.task?.tags ?? [];
   }
 
   void _showColorPicker() {
@@ -269,6 +274,19 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     ];
   }
 
+  Widget _buildCard(
+      String title, String subtitle, Widget trailing, VoidCallback onTap) {
+    return Card(
+      margin: const EdgeInsets.all(0),
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: trailing,
+        onTap: onTap,
+      ),
+    );
+  }
+
   List<Widget> _buildColorDeadlineRepeat() {
     Widget deadlineTrailing;
     if (deadline != null) {
@@ -284,6 +302,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       repeatTrailing = const Icon(Icons.repeat_rounded);
     }
 
+    Widget tagsTrailing;
+    if (tags.isEmpty) {
+      tagsTrailing = const Icon(Icons.label_outline_rounded);
+    } else {
+      tagsTrailing = Text(
+        tags.length.toString(),
+        style: Theme.of(context).textTheme.bodyLarge,
+      );
+    }
+
     Widget subtaskTrailing;
     if (subtasks.isEmpty) {
       subtaskTrailing = const Icon(Icons.subdirectory_arrow_left_rounded);
@@ -292,70 +320,80 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
 
     return [
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Colour"),
-          subtitle: const Text("Select a colour for your task"),
-          trailing: Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: selectedColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
+      _buildCard(
+        "Colour",
+        "Select a colour for your task",
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: selectedColor,
+            borderRadius: BorderRadius.circular(4),
           ),
-          onTap: _showColorPicker,
         ),
+        _showColorPicker,
       ),
-      const SizedBox(height: 16),
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Deadline"),
-          subtitle: const Text("Select a deadline for your task"),
-          trailing: deadlineTrailing,
-          onTap: () async {
-            final selectedDate = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 365)),
-            );
-            if (selectedDate != null) {
-              setState(() {
-                hasDeadline = true;
-                deadline = selectedDate;
-              });
-            }
-          },
-        ),
-      ),
-      const SizedBox(height: 16),
-      Card(
-        margin: const EdgeInsets.all(0),
-        child: ListTile(
-          title: const Text("Repeat"),
-          subtitle: const Text("Select repeat interval for your task"),
-          trailing: repeatTrailing,
-          onTap: () async {
-            int? days = await showDialog(
-              context: context,
-              builder: (context) {
-                return RepeatSelectCard(repeatInterval: repeatInterval);
-              },
-            );
-            if (days != null) {
-              if (!hasDeadline) {
-                hasDeadline = true;
-                deadline = DateTime.now();
-              }
-            }
+      const Spacing(),
+      _buildCard(
+        "Deadline",
+        "Select a deadline for your task",
+        deadlineTrailing,
+        () async {
+          final selectedDate = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 365)),
+          );
+          if (selectedDate != null) {
             setState(() {
-              repeatInterval = days;
+              hasDeadline = true;
+              deadline = selectedDate;
             });
-          },
-        ),
+          }
+        },
+      ),
+      const Spacing(),
+      _buildCard(
+        "Repeat",
+        "Select repeat interval for your task",
+        repeatTrailing,
+        () async {
+          int? days = await showDialog(
+            context: context,
+            builder: (context) {
+              return RepeatSelectCard(repeatInterval: repeatInterval);
+            },
+          );
+          if (days != null) {
+            if (!hasDeadline) {
+              hasDeadline = true;
+              deadline = DateTime.now();
+            }
+          }
+          setState(() {
+            repeatInterval = days;
+          });
+        },
+      ),
+      const Spacing(),
+      _buildCard(
+        "Tags",
+        "Select tags for your task",
+        tagsTrailing,
+        () async {
+          List<Tag>? allTags = await showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            builder: (context) => TagsCard(tags: tags),
+          );
+
+          if (allTags != null) {
+            setState(() {
+              tags = allTags.map((e) => e.id).toList();
+            });
+          }
+        },
       ),
       const Spacing(),
       Card(
@@ -391,6 +429,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             color: selectedColor ?? defaultColor,
             dependency: selectedDependency,
             subtasks: subtasks,
+            tags: tags,
           );
           Fluttertoast.showToast(
               msg: editing

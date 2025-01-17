@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:taskly/models/tag.dart';
 import 'package:taskly/models/task.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:taskly/providers/tags_provider.dart';
 import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/utils/share_utils.dart';
+import 'package:taskly/widgets/spacing.dart';
 
 class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
@@ -115,7 +119,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
     }
   }
 
-  Widget _buildTaskTile(Task task, int index) {
+  Widget _buildTaskTile(Task task, int index, List<Tag> tags) {
     return Slidable(
       endActionPane: ActionPane(
         motion: const StretchMotion(),
@@ -156,10 +160,27 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     task.isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
-            subtitle: Text(
-              task.description.length > 30
-                  ? '${task.description.substring(0, 30)}...'
-                  : task.description,
+            subtitle: Column(
+              children: [
+                Text(
+                  task.description.length > 30
+                      ? '${task.description.substring(0, 30)}...'
+                      : task.description,
+                ),
+                const Spacing(),
+                Wrap(
+                  spacing: 5,
+                  runSpacing: 5,
+                  children: tags
+                      .map(
+                        (e) => Badge(
+                          backgroundColor: e.color,
+                          label: Text(e.title),
+                        ),
+                      )
+                      .toList(),
+                )
+              ],
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -192,39 +213,47 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget build(BuildContext context) {
     final groupedTasks = _groupTasksByDeadline();
 
-    return ListView.builder(
-      itemCount: groupedTasks.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, sectionIndex) {
-        final section = groupedTasks[sectionIndex];
-        final isExpanded = _expandedSections[section.key] ?? true;
+    return Consumer<TagsProvider>(
+      builder: (context, value, child) => ListView.builder(
+        itemCount: groupedTasks.length,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, sectionIndex) {
+          final task = widget.tasks[sectionIndex];
+          final section = groupedTasks[sectionIndex];
+          final isExpanded = _expandedSections[section.key] ?? true;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              onTap: () {
-                setState(() {
-                  _expandedSections[section.key] = !isExpanded;
-                });
-              },
-              leading: Icon(
-                isExpanded ? Icons.expand_more : Icons.chevron_right,
+          List<Tag> tags = value.allTags
+              .where(
+                  (alltag) => task.tags.any((element) => element == alltag.id))
+              .toList();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                onTap: () {
+                  setState(() {
+                    _expandedSections[section.key] = !isExpanded;
+                  });
+                },
+                leading: Icon(
+                  isExpanded ? Icons.expand_more : Icons.chevron_right,
+                ),
+                title: Text(
+                  '${section.key} (${section.value.length})',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-              title: Text(
-                '${section.key} (${section.value.length})',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            if (isExpanded)
-              ...section.value.map((task) {
-                final index = widget.tasks.indexOf(task);
-                return _buildTaskTile(task, index);
-              }),
-          ],
-        );
-      },
+              if (isExpanded)
+                ...section.value.map((task) {
+                  final index = widget.tasks.indexOf(task);
+                  return _buildTaskTile(task, index, tags);
+                }),
+            ],
+          );
+        },
+      ),
     );
   }
 }

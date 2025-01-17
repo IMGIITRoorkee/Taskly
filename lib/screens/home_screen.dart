@@ -156,11 +156,12 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
-void kudosForMeditation(int scoreChange, String mssg) async{
-  kudos.score += scoreChange;
-  kudos.history.add([mssg, scoreChange.toString()]);
-  await KudosStorage.saveKudos(kudos);
-}
+  void kudosForMeditation(int scoreChange, String mssg) async {
+    kudos.score += scoreChange;
+    kudos.history.add([mssg, scoreChange.toString()]);
+    await KudosStorage.saveKudos(kudos);
+  }
+
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
     setState(() {
@@ -190,13 +191,16 @@ void kudosForMeditation(int scoreChange, String mssg) async{
           TaskStorage.saveTasks(tasks);
         });
       } else if (option == TaskOption.launchMeditationScreen) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MeditationScreen(kudosForMeditation:  kudosForMeditation)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    MeditationScreen(kudosForMeditation: kudosForMeditation)));
       } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
-      } else if (option == TaskOption.defaultColor){
+      } else if (option == TaskOption.defaultColor) {
         showColorPickerDialog(context);
       }
     });

@@ -12,6 +12,7 @@ class Task {
   int? recurringDays;
   Task? dependency;
   List<Subtask> subtasks;
+  List<String> tags; // the tag ids
 
   bool get isRecurring => recurringDays != null;
 
@@ -27,8 +28,10 @@ class Task {
     this.dependency,
     String? id,
     List<Subtask>? subtasks,
+    List<String>? tags,
   })  : id = id ?? DateTime.now().microsecondsSinceEpoch.toString(),
-        subtasks = subtasks ?? [];
+        subtasks = subtasks ?? [],
+        tags = tags ?? [];
 
   // Convert a Task object to JSON
   Map<String, dynamic> toJson() {
@@ -41,6 +44,7 @@ class Task {
       'recurringDays': recurringDays,
       'color': color.value,
       'id': id,
+      'tags': tags,
       'subtasks': subtasks.map((e) => e.toMap()).toList(),
     };
   }
@@ -65,6 +69,7 @@ class Task {
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
       id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      tags: List.from(json['tags']),
       subtasks: subtasks,
     );
   }
