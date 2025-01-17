@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
+import 'package:taskly/service/permissions_service.dart';
 import 'package:taskly/service/location_service.dart';
 import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
@@ -15,6 +17,7 @@ import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
+import 'package:taskly/widgets/default_color.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
 import 'dart:io';
@@ -31,10 +34,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static const int geofenceRadius = 50;
 
+  static const platform = MethodChannel('com.example.taskly/deeplink');
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
   bool showtip = false;
+  Set<int> selectedIndexes = {};
 
   @override
   void initState() {
@@ -43,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadTasks();
     _loadKudos();
     _checkCurrentLocation();
+    _listenForDeepLink();
   }
 
   void _checkCurrentLocation() async {
@@ -61,6 +67,27 @@ class _HomeScreenState extends State<HomeScreen> {
     for (Task item in completed) {
       await _toggleTaskCompletion(tasks.indexOf(item), true);
     }
+  }
+
+  void _listenForDeepLink() {
+    platform.setMethodCallHandler(
+      (call) async {
+        if (call.method == "onDeepLink") {
+          final String? data = call.arguments as String?;
+          if (data != null) {
+            Uri deeplink = Uri.parse(data);
+            int index = tasks.indexWhere(
+              (element) => element.id == deeplink.queryParameters['id'],
+            );
+            if (index == -1) {
+              Fluttertoast.showToast(msg: "Task could not be found!");
+            } else {
+              _editTask(index);
+            }
+          }
+        }
+      },
+    );
   }
 
   void _fetch() async {
@@ -95,13 +122,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future _toggleTaskCompletion(int index, bool? value) async {
+    if (tasks[index].dependency != null &&
+        !tasks[index].dependency!.isCompleted) {
+      Fluttertoast.showToast(
+        msg: AskDependencyCompletion,
+        toastLength: Toast.LENGTH_LONG,
+      );
+      return;
+    }
     setState(() {
-      tasks[index].isCompleted = value ?? false;
+      tasks[index].toggleCompletion();
 
       if (tasks[index].isCompleted) {
         if (tasks[index].hasDeadline) {
           var days_diff =
-              tasks[index].deadline.difference(DateTime.now()).inDays + 1;
+              tasks[index].deadline!.difference(DateTime.now()).inDays + 1;
           if (days_diff == 0) {
             days_diff = 1;
           }
@@ -144,6 +179,12 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
+  void kudosForMeditation(int scoreChange, String mssg) async {
+    kudos.score += scoreChange;
+    kudos.history.add([mssg, scoreChange.toString()]);
+    await KudosStorage.saveKudos(kudos);
+  }
+
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
     setState(() {
@@ -157,13 +198,33 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => KudosDetails(
               kudos: kudos, onClose: () => Navigator.of(context).pop()),
         );
+      } else if (option == TaskOption.deleteSelected) {
+        if (selectedIndexes.isEmpty) {
+          Fluttertoast.showToast(msg: "Long click on tasks to select them");
+          return;
+        }
+        List<int> sorted = selectedIndexes.toList()
+          ..sort((a, b) => b.compareTo(a));
+
+        for (int i in sorted) {
+          tasks.removeAt(i);
+        }
+        setState(() {
+          selectedIndexes = {};
+          TaskStorage.saveTasks(tasks);
+        });
       } else if (option == TaskOption.launchMeditationScreen) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const MeditationScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    MeditationScreen(kudosForMeditation: kudosForMeditation)));
       } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
+      } else if (option == TaskOption.defaultColor) {
+        showColorPickerDialog(context);
       }
     });
   }
@@ -172,7 +233,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final newTask = await Navigator.push<Task>(
       context,
       MaterialPageRoute(
-        builder: (context) => TaskFormScreen(task: tasks[index]),
+        builder: (context) => TaskFormScreen(
+          task: tasks[index],
+          availableTasks: tasks,
+        ),
       ),
     );
 
@@ -183,7 +247,35 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSelectionAdded(int index) => setState(() {
+        selectedIndexes.add(index);
+        _showUpdatedSelectionsToast();
+      });
+
+  void _onSelectionRemoved(int index) => setState(() {
+        selectedIndexes.remove(index);
+        if (selectedIndexes.isNotEmpty) _showUpdatedSelectionsToast();
+      });
+
+  void _showUpdatedSelectionsToast() {
+    Fluttertoast.showToast(msg: "Selected tasks: ${selectedIndexes.length}");
+  }
+
   void exportToCSV(List<Task> tasks) async {
+    if (tasks.isEmpty) {
+      Fluttertoast.showToast(msg: "There are no tasks to export!");
+      return;
+    }
+
+    if (Platform.isAndroid) {
+      bool status = await PermissionsService.askForStorage();
+      if (!status) {
+        Fluttertoast.showToast(
+            msg: "Storage permission is needed to export csv file!");
+        return;
+      }
+    }
+
     // Prepare CSV data
     List<List<dynamic>> rows = [];
 
@@ -198,7 +290,9 @@ class _HomeScreenState extends State<HomeScreen> {
         task.description,
         task.isCompleted,
         task.hasDeadline,
-        '${task.deadline.day}/${task.deadline.month}/${task.deadline.year}'
+        task.hasDeadline
+            ? '${task.deadline!.day}/${task.deadline!.month}/${task.deadline!.year}'
+            : null,
       ]);
     }
 
@@ -210,7 +304,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (directory == null) {
       // User canceled the picker
-      print("Export canceled.");
       return;
     }
 
@@ -220,8 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Write the CSV file
     final file = File(path);
     await file.writeAsString(csv);
-
-    print("File saved at: $path");
+    Fluttertoast.showToast(msg: "File saved at: $path");
   }
 
   void _loadKudos() async {
@@ -246,6 +338,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onSubtaskChanged(int index, Task t) async {
+    tasks[index] = t;
+    setState(() {});
+    await TaskStorage.saveTasks(tasks);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -260,6 +358,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelected: _onOptionSelected,
             itemBuilder: (context) {
               return [
+                const PopupMenuItem(
+                  value: TaskOption.deleteSelected,
+                  child: Text("Delete selected tasks"),
+                ),
                 const PopupMenuItem(
                   value: TaskOption.deleteAll,
                   child: Text("Delete all tasks"),
@@ -281,6 +383,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const PopupMenuItem(
                   value: TaskOption.launchMeditationScreen,
                   child: Text("Meditate"),
+                ),
+                const PopupMenuItem(
+                  value: TaskOption.defaultColor,
+                  child: Text("Set Default Task Color"),
                 ),
               ];
             },
@@ -305,7 +411,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   tasks: tasks,
                   onToggle: _toggleTaskCompletion,
                   onEdit: _editTask,
+                  selectedIndexes: selectedIndexes,
+                  onSelectionAdded: _onSelectionAdded,
+                  onSelectionRemoved: _onSelectionRemoved,
                   onStart: _onStartTask,
+                  onSubtaskChanged: _onSubtaskChanged,
                 ),
         ],
       ),
@@ -313,7 +423,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () async {
           final newTask = await Navigator.push<Task>(
             context,
-            MaterialPageRoute(builder: (context) => const TaskFormScreen()),
+            MaterialPageRoute(
+                builder: (context) => TaskFormScreen(
+                      availableTasks: tasks,
+                    )),
           );
           if (newTask != null) {
             _addTask(newTask);
