@@ -7,6 +7,7 @@ import 'package:taskly/providers/tags_provider.dart';
 import 'package:taskly/screens/task_box.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/utils/share_utils.dart';
 import 'package:taskly/widgets/spacing.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -72,6 +73,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         task: task,
         onEdit: () => widget.onEdit(index),
         onStart: () => widget.onStart(index),
+        onShare: () => ShareUtils.shareTask(task),
         onDelete: () async {
           setState(() {
             deletedTask = widget.tasks[index];

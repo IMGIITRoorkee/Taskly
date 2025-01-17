@@ -9,6 +9,7 @@ class TaskBoxWidget extends StatefulWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onStart;
+  final VoidCallback onShare;
 
   const TaskBoxWidget({
     super.key,
@@ -16,6 +17,7 @@ class TaskBoxWidget extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onStart,
+    required this.onShare,
   });
 
   @override
@@ -154,6 +156,10 @@ class _TaskBoxWidgetState extends State<TaskBoxWidget> {
                               icon: const Icon(Icons.play_arrow_rounded),
                               onPressed: widget.onStart,
                             ),
+                          IconButton(
+                            icon: const Icon(Icons.share_rounded),
+                            onPressed: onShare,
+                          ),
                           IconButton(
                             icon: const Icon(Icons.edit, color: Colors.blue),
                             onPressed: widget.onEdit,
