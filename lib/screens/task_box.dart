@@ -158,7 +158,7 @@ class _TaskBoxWidgetState extends State<TaskBoxWidget> {
                             ),
                           IconButton(
                             icon: const Icon(Icons.share_rounded),
-                            onPressed: onShare,
+                            onPressed: widget.onShare,
                           ),
                           IconButton(
                             icon: const Icon(Icons.edit, color: Colors.blue),
