@@ -16,6 +16,10 @@ class Task {
   bool get isRecurring => recurringDays != null;
 
   bool get hasDeadline => deadline != null;
+  double? lat;
+  double? lng;
+
+  bool get hasLocationAttached => lat != null && lng != null;
 
   Task({
     required this.title,
@@ -27,6 +31,8 @@ class Task {
     this.dependency,
     String? id,
     List<Subtask>? subtasks,
+    this.lat,
+    this.lng,
   })  : id = id ?? DateTime.now().microsecondsSinceEpoch.toString(),
         subtasks = subtasks ?? [];
 
@@ -40,6 +46,8 @@ class Task {
       'dependency': dependency?.toJson(),
       'recurringDays': recurringDays,
       'color': color.value,
+      'lat': lat,
+      'lng': lng,
       'id': id,
       'subtasks': subtasks.map((e) => e.toMap()).toList(),
     };
@@ -64,6 +72,8 @@ class Task {
           json['dependency'] != null ? Task.fromJson(json['dependency']) : null,
       recurringDays: json['recurringDays'],
       color: Color(json['color']),
+      lat: json['lat'],
+      lng: json['lng'],
       id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       subtasks: subtasks,
     );

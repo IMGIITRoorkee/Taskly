@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/enums/taskoptions.dart';
 import 'package:taskly/service/permissions_service.dart';
+import 'package:taskly/service/location_service.dart';
 import 'package:taskly/storage/kudos_storage.dart';
 import 'package:taskly/models/kudos.dart';
 import 'package:taskly/models/tip.dart';
@@ -30,6 +32,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const int geofenceRadius = 50;
+
   static const platform = MethodChannel('com.example.taskly/deeplink');
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
@@ -43,7 +47,26 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetch();
     _loadTasks();
     _loadKudos();
+    _checkCurrentLocation();
     _listenForDeepLink();
+  }
+
+  void _checkCurrentLocation() async {
+    Position? current = await LocationService.getCurrentLocation();
+    if (current == null) return;
+
+    List<Task> completed = tasks
+        .where((element) =>
+            element.hasLocationAttached &&
+            !element.isCompleted &&
+            LocationService.getDistance(current.latitude, current.longitude,
+                    element.lat!, element.lng!) <
+                geofenceRadius)
+        .toList();
+
+    for (Task item in completed) {
+      await _toggleTaskCompletion(tasks.indexOf(item), true);
+    }
   }
 
   void _listenForDeepLink() {
@@ -98,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
-  void _toggleTaskCompletion(int index, bool? value) async {
+  Future _toggleTaskCompletion(int index, bool? value) async {
     if (tasks[index].dependency != null &&
         !tasks[index].dependency!.isCompleted) {
       Fluttertoast.showToast(
@@ -156,11 +179,12 @@ class _HomeScreenState extends State<HomeScreen> {
     await TaskStorage.saveTasks(tasks);
   }
 
-void kudosForMeditation(int scoreChange, String mssg) async{
-  kudos.score += scoreChange;
-  kudos.history.add([mssg, scoreChange.toString()]);
-  await KudosStorage.saveKudos(kudos);
-}
+  void kudosForMeditation(int scoreChange, String mssg) async {
+    kudos.score += scoreChange;
+    kudos.history.add([mssg, scoreChange.toString()]);
+    await KudosStorage.saveKudos(kudos);
+  }
+
   // Handle task options, now using the enum
   void _onOptionSelected(TaskOption option) {
     setState(() {
@@ -190,13 +214,16 @@ void kudosForMeditation(int scoreChange, String mssg) async{
           TaskStorage.saveTasks(tasks);
         });
       } else if (option == TaskOption.launchMeditationScreen) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MeditationScreen(kudosForMeditation:  kudosForMeditation)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    MeditationScreen(kudosForMeditation: kudosForMeditation)));
       } else if (option == TaskOption.toggleTipVisibility) {
         showtip = !showtip;
       } else if (option == TaskOption.exportToCSV) {
         exportToCSV(tasks);
-      } else if (option == TaskOption.defaultColor){
+      } else if (option == TaskOption.defaultColor) {
         showColorPickerDialog(context);
       }
     });

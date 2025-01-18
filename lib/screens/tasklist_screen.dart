@@ -150,12 +150,18 @@ class _TaskListScreenState extends State<TaskListScreen> {
               }
             },
             onLongPress: () => _toggleTaskSelection(index),
-            title: Text(
-              task.title,
-              style: TextStyle(
-                decoration:
-                    task.isCompleted ? TextDecoration.lineThrough : null,
-              ),
+            title: Row(
+              children: [
+                Text(
+                  task.title,
+                  style: TextStyle(
+                    decoration:
+                        task.isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                if (task.hasLocationAttached)
+                  const Icon(Icons.pin_drop_outlined)
+              ],
             ),
             subtitle: Text(
               task.description.length > 30

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:taskly/models/subtask.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/service/location_service.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/storage/task_storage.dart';
@@ -38,6 +40,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Color defaultColor = Colors.blue;
   late List<Task> _availableTasks;
   late List<Subtask> subtasks;
+  double? lat, lng;
 
   bool isTitleListening = false;
 
@@ -67,6 +70,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     if (hasDeadline) deadline = widget.task?.deadline;
     subtasks = widget.task?.subtasks ?? [];
     setSelectedColour();
+    lat = widget.task?.lat;
+    lng = widget.task?.lng;
   }
 
   @override
@@ -376,6 +381,33 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           },
         ),
       ),
+      const Spacing(),
+      ElevatedButton(
+        onPressed: lat != null && lng != null
+            ? null
+            : () async {
+                Position? position = await LocationService.getCurrentLocation();
+                if (position == null) return;
+
+                setState(() {
+                  Fluttertoast.showToast(
+                      msg:
+                          "Task will be auto-completed when you are again at this location");
+                  lat = position.latitude;
+                  lng = position.longitude;
+                });
+              },
+        child: const Text("Autocomplete task at current location"),
+      ),
+      if (lat != null && lng != null)
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              lat = lng = null;
+            });
+          },
+          child: const Text("Detach location from task"),
+        ),
     ];
   }
 
@@ -391,6 +423,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             color: selectedColor ?? defaultColor,
             dependency: selectedDependency,
             subtasks: subtasks,
+            lat: lat,
+            lng: lng,
           );
           Fluttertoast.showToast(
               msg: editing
