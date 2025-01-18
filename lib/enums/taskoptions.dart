@@ -6,5 +6,6 @@ enum TaskOption {
   launchMeditationScreen,
   toggleTipVisibility,
   exportToCSV,
+  loadFromCSV,
   defaultColor,
 }
