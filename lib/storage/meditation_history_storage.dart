@@ -57,4 +57,33 @@ class MeditationHistoryStorage {
     final String encodedHistory = jsonEncode(history);
     await prefs.setString(_meditHistKey, encodedHistory);
   }
+} 
+
+
+class MeditationDailyRemiderStorage {
+  static const String _mdrsKey = 'MDRS'; // MDRS = Meditation Daily Reminder Storage
+  static const String _mdrsDateKey = 'MDRSDATE'; // MDRSDATE = Meditation Daily Reminder Storage Date
+
+  static Future<void> save(bool remind) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_mdrsKey, remind.toString());
+  }
+
+  static Future<bool> get() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? data = prefs.getString(_mdrsKey);
+    return data == 'true';
+  }
+
+  static Future<void> saveLastDate(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_mdrsDateKey, MyDateUtils.getFormattedDate(date));
+  }
+
+  static Future<String> getLastDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    String date = prefs.getString(_mdrsDateKey) ?? MyDateUtils.getFormattedDate(DateTime.now().subtract(const Duration(days: 1)));
+    return date;
+  }
+
 }

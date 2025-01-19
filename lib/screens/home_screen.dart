@@ -14,8 +14,11 @@ import 'package:taskly/screens/task_pomodoro_screen.dart';
 import 'package:taskly/screens/taskform_screen.dart';
 import 'package:taskly/screens/tasklist_screen.dart';
 import 'package:taskly/models/task.dart';
+import 'package:taskly/storage/meditation_history_storage.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/service/random_tip_service.dart';
+import 'package:taskly/utils/date_utils.dart';
+import 'package:taskly/widgets/meditation_reminder_widget.dart';
 import 'package:taskly/widgets/default_color.dart';
 import 'package:taskly/widgets/theme_mode_switch.dart';
 import 'package:taskly/widgets/tip_of_day_card.dart';
@@ -35,6 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> tasks = [];
   Kudos kudos = Kudos(score: 0, history: []);
   Tip? tip;
+  bool meditationDailyRemider = false;
+  String lastDateMeditationReminded = "";
   bool showtip = false;
   Set<int> selectedIndexes = {};
 
@@ -44,9 +49,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetch();
     _loadTasks();
     _loadKudos();
+    _loadMeditationDailyReminderDetails();
     _listenForDeepLink();
   }
 
+  void _loadMeditationDailyReminderDetails()  async {
+    meditationDailyRemider = await MeditationDailyRemiderStorage.get();
+    lastDateMeditationReminded = await MeditationDailyRemiderStorage.getLastDate();
+    setState(() {
+      _checkMeditationReminder();
+    });
+
+  }
   void _listenForDeepLink() {
     platform.setMethodCallHandler(
       (call) async {
@@ -66,6 +80,16 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
     );
+  }
+  void _checkMeditationReminder() async {
+    if (lastDateMeditationReminded == MyDateUtils.getFormattedDate(DateTime.now())) {
+      await MeditationDailyRemiderStorage.saveLastDate(DateTime.now());
+      if (meditationDailyRemider) {
+        // Show the notification
+        showMeditationCheckDialog(context);
+      }
+    }
+
   }
 
   void _fetch() async {
@@ -200,6 +224,15 @@ void kudosForMeditation(int scoreChange, String mssg) async{
       } else if (option == TaskOption.defaultColor){
         showColorPickerDialog(context);
       }
+      else if (option == TaskOption.toggleMDR) {
+        if (meditationDailyRemider) {
+          meditationDailyRemider = false;
+          MeditationDailyRemiderStorage.save(false);
+        } else {
+          meditationDailyRemider = true;
+          MeditationDailyRemiderStorage.save(true);
+        }
+      }
       else if (option == TaskOption.loadFromCSV) {
         importFromCSV(tasks).then((newTasks) {
           setState(() {
@@ -208,7 +241,6 @@ void kudosForMeditation(int scoreChange, String mssg) async{
           TaskStorage.saveTasks(tasks);
         });
       }
-
     });
   }
 
@@ -424,6 +456,12 @@ Future<List<Task>> importFromCSV(List<Task> existingTasks) async {
                   value: TaskOption.launchMeditationScreen,
                   child: Text("Meditate"),
                 ),
+                PopupMenuItem(
+                  value: TaskOption.toggleMDR,
+                  child: meditationDailyRemider
+                      ? const Text("Stop Daily Meditation Reminder")
+                      : const Text("Start Daily Meditation Reminder"),
+                )
                 const PopupMenuItem(
                   value: TaskOption.loadFromCSV,
                   child: Text("Load Tasks from csv file."),
