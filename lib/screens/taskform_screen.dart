@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:taskly/models/subtask.dart';
 import 'package:taskly/models/task.dart';
 import 'package:taskly/service/speech_service.dart';
 import 'package:taskly/constants.dart';
 import 'package:taskly/storage/task_storage.dart';
 import 'package:taskly/utils/date_utils.dart';
 import 'package:taskly/widgets/repeat_select_card.dart';
+import 'package:taskly/widgets/spacing.dart';
+import 'package:taskly/widgets/subtask_add_card.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -34,7 +37,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   int? repeatInterval;
   Color defaultColor = Colors.blue;
   late List<Task> _availableTasks;
-
+  late List<Subtask> subtasks;
 
   bool isTitleListening = false;
 
@@ -62,6 +65,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         widget.task?.recurringDays == 0 ? null : widget.task?.recurringDays;
 
     if (hasDeadline) deadline = widget.task?.deadline;
+    subtasks = widget.task?.subtasks ?? [];
     setSelectedColour();
   }
 
@@ -73,10 +77,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _focusNode.dispose();
     super.dispose();
   }
-void setSelectedColour() async{
-  defaultColor = await DefaultTaskColorStorage.loadDefaultColor();
-  selectedColor = widget.task?.color ?? defaultColor;
-}
+
+  void setSelectedColour() async {
+    defaultColor = await DefaultTaskColorStorage.loadDefaultColor();
+    selectedColor = widget.task?.color ?? defaultColor;
+  }
 
   void _onTitleChanged() {
     final input = _titleController.text.toLowerCase();
@@ -154,7 +159,7 @@ void setSelectedColour() async{
         title: const Text('Pick Task Color'),
         content: SingleChildScrollView(
           child: ColorPicker(
-            pickerColor: selectedColor?? defaultColor,
+            pickerColor: selectedColor ?? defaultColor,
             onColorChanged: (color) {
               setState(() {
                 selectedColor = color;
@@ -279,6 +284,13 @@ void setSelectedColour() async{
       repeatTrailing = const Icon(Icons.repeat_rounded);
     }
 
+    Widget subtaskTrailing;
+    if (subtasks.isEmpty) {
+      subtaskTrailing = const Icon(Icons.subdirectory_arrow_left_rounded);
+    } else {
+      subtaskTrailing = Text("${subtasks.length}");
+    }
+
     return [
       Card(
         margin: const EdgeInsets.all(0),
@@ -345,6 +357,25 @@ void setSelectedColour() async{
           },
         ),
       ),
+      const Spacing(),
+      Card(
+        margin: const EdgeInsets.all(0),
+        child: ListTile(
+          title: const Text("Subtasks"),
+          subtitle: const Text("Add subtasks to your task"),
+          trailing: subtaskTrailing,
+          onTap: () async {
+            List<Subtask>? sub = await showModalBottomSheet(
+              context: context,
+              builder: (context) => SubtaskAddCard(task: widget.task),
+            );
+            if (sub != null) {
+              subtasks = sub;
+              setState(() {});
+            }
+          },
+        ),
+      ),
     ];
   }
 
@@ -359,6 +390,7 @@ void setSelectedColour() async{
             recurringDays: repeatInterval,
             color: selectedColor ?? defaultColor,
             dependency: selectedDependency,
+            subtasks: subtasks,
           );
           Fluttertoast.showToast(
               msg: editing

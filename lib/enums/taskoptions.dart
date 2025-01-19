@@ -7,5 +7,6 @@ enum TaskOption {
   toggleTipVisibility,
   exportToCSV,
   toggleMDR, // to toggle Medatation Daily Reminder
+  loadFromCSV,
   defaultColor,
 }

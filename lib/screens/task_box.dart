@@ -1,23 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:taskly/google_calendar.dart';
+import 'package:taskly/models/subtask.dart';
 import 'package:taskly/models/task.dart';
 
-class TaskBoxWidget extends StatelessWidget {
+class TaskBoxWidget extends StatefulWidget {
   final Task task;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  final VoidCallback onClose;
   final VoidCallback onStart;
+  final VoidCallback onShare;
 
   const TaskBoxWidget({
     super.key,
     required this.task,
     required this.onEdit,
     required this.onDelete,
-    required this.onClose,
     required this.onStart,
+    required this.onShare,
   });
+
+  @override
+  State<TaskBoxWidget> createState() => _TaskBoxWidgetState();
+}
+
+class _TaskBoxWidgetState extends State<TaskBoxWidget> {
+  late Task task;
+  bool subtasksChangesDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    task = widget.task;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,18 +98,39 @@ class TaskBoxWidget extends StatelessWidget {
                             if (task.dependency!.isCompleted)
                               const Text(
                                 'Completed',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 16, color: Colors.green),
                               ),
                             if (!task.dependency!.isCompleted)
                               const Text(
                                 'Pending',
-                                style: const TextStyle(
-                                    fontSize: 16, color: Colors.red),
+                                style:
+                                    TextStyle(fontSize: 16, color: Colors.red),
                               ),
                           ],
                         ),
                       const SizedBox(height: 20),
+
+                      // Subtasks
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: task.subtasks.length,
+                        itemBuilder: (context, index) {
+                          Subtask s = task.subtasks[index];
+                          return ListTile(
+                            title: Text(s.title),
+                            leading: Checkbox(
+                              value: s.isCompleted,
+                              onChanged: (value) {
+                                subtasksChangesDone = true;
+                                task.subtasks[index].isCompleted =
+                                    value ?? false;
+                                setState(() {});
+                              },
+                            ),
+                          );
+                        },
+                      ),
 
                       // Edit and Delete Buttons
                       Row(
@@ -118,15 +154,19 @@ class TaskBoxWidget extends StatelessWidget {
                           if (!task.isCompleted)
                             IconButton(
                               icon: const Icon(Icons.play_arrow_rounded),
-                              onPressed: onStart,
+                              onPressed: widget.onStart,
                             ),
                           IconButton(
+                            icon: const Icon(Icons.share_rounded),
+                            onPressed: widget.onShare,
+                          ),
+                          IconButton(
                             icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: onEdit,
+                            onPressed: widget.onEdit,
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: onDelete,
+                            onPressed: widget.onDelete,
                           ),
                         ],
                       ),
@@ -148,7 +188,9 @@ class TaskBoxWidget extends StatelessWidget {
               child: IconButton(
                 icon: const Icon(Icons.close),
                 iconSize: 16,
-                onPressed: onClose,
+                onPressed: () {
+                  Navigator.pop(context, subtasksChangesDone);
+                },
               ),
             ),
           ),
